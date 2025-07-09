@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
+import { ChatbotComponent } from './chatbot/chatbot';   //import chatbot comp
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  standalone: true,
+  imports: [ChatbotComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrls: ['./app.scss']
 })
-export class App {
-  protected title = 'chatbot-widget';
-}
+export class AppComponent {}

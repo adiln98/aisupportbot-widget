@@ -1,0 +1,30 @@
+<div class="chatbot-container">
+  <!-- Chatbot Icon -->
+  <button class="chatbot-button" (click)="toggleChat()">💬</button>
+
+  <!-- Chatbox -->
+  <div *ngIf="showChat" class="chatbot-popup">
+    <!-- Header -->
+    <div class="chatbot-header">
+      <h4>DocNow AI</h4>
+      <button class="close-btn" (click)="toggleChat()">✖</button>
+    </div>
+
+    <!-- Body -->
+    <div class="chatbot-body">
+      <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
+        {{ msg.text }}
+      </div>
+
+      <div *ngIf="loading" class="message-bot loading-msg">
+        <em>Typing...</em>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="chatbot-footer">
+      <input [(ngModel)]="input" (keyup.enter)="sendMessage()" placeholder="Ask something..." />
+      <button (click)="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
