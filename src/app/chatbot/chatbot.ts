@@ -20,7 +20,7 @@ interface BotResponse {
   styleUrls: ['./chatbot.scss']
 })
 export class ChatbotComponent {
-  showChat = false;
+  showChat = true; // Show chat on load for standalone mode
   input = '';
   messages: { sender: 'user' | 'bot'; text: string }[] = [];
   loading = false;

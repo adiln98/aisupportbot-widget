@@ -1,8 +1,11 @@
+<!-- chatbot.html -->
+<p style="color: green; padding: 0.5rem">✅ Chatbot component loaded!</p>
+
 <div class="chatbot-container">
-  <!-- Chatbot Icon -->
+  <!-- Chat Icon -->
   <button class="chatbot-button" (click)="toggleChat()">💬</button>
 
-  <!-- Chatbox -->
+  <!-- Chat Popup -->
   <div *ngIf="showChat" class="chatbot-popup">
     <!-- Header -->
     <div class="chatbot-header">
@@ -10,7 +13,7 @@
       <button class="close-btn" (click)="toggleChat()">✖</button>
     </div>
 
-    <!-- Body -->
+    <!-- Messages -->
     <div class="chatbot-body">
       <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
         {{ msg.text }}
@@ -21,7 +24,7 @@
       </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Input -->
     <div class="chatbot-footer">
       <input [(ngModel)]="input" (keyup.enter)="sendMessage()" placeholder="Ask something..." />
       <button (click)="sendMessage()">Send</button>
