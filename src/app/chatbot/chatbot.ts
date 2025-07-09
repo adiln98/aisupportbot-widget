@@ -31,25 +31,25 @@ export class ChatbotComponent {
     this.showChat = !this.showChat;
   }
 
-  sendMessage() {
-    const userMsg = this.input.trim();
-    if (!userMsg) return;
+sendMessage() {
+  const userMsg = this.input.trim();
+  if (!userMsg) return;
 
-    this.messages.push({ sender: 'user', text: userMsg });
-    this.input = '';
-    this.loading = true;
+  this.messages.push({ sender: 'user', text: userMsg });
+  this.input = '';
+  this.loading = true;
 
-    this.chatbotService.queryBot(userMsg).subscribe({
-      next: (response: BotResponse) => {
-        this.messages.push({ sender: 'bot', text: response.answer });
-        console.log('[Chatbot Response]', response);
-        this.loading = false;
-      },
-      error: (error: unknown) => {
-        console.error('[Chatbot Error]', error);
-        this.messages.push({ sender: 'bot', text: 'Sorry, something went wrong.' });
-        this.loading = false;
-      }
-    });
-  }
+  this.chatbotService.queryBot(userMsg).subscribe({
+    next: (response: BotResponse) => {
+      this.messages.push({ sender: 'bot', text: response.answer });
+      console.log('[Chatbot Response]', response);
+      this.loading = false;
+    },
+    error: (error: unknown) => {
+      console.error('[Chatbot Error]', error);
+      this.messages.push({ sender: 'bot', text: 'Sorry, something went wrong.' });
+      this.loading = false;
+    }
+  });
+}
 }
