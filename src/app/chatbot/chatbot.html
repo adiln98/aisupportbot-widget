@@ -3,24 +3,40 @@
 
 <div class="chatbot-container">
   <!-- Chat Icon -->
-  <button class="chatbot-button" (click)="toggleChat()">💬</button>
+  <button *ngIf="!showChat" class="chatbot-button" (click)="toggleChat()">
+    <img src="assets/bot.png" alt="Bot" class="button-bot-icon" />
+    <span class="button-text">DocNow Assistant</span>
+  </button>
 
   <!-- Chat Popup -->
   <div *ngIf="showChat" class="chatbot-popup">
     <!-- Header -->
     <div class="chatbot-header">
-      <h4>DocNow AI</h4>
+      <div class="header-left">
+        <img src="assets/bot.png" alt="Bot" class="bot-icon" />
+        <span class="header-title">DocNow Assistant</span>
+      </div>
       <button class="close-btn" (click)="toggleChat()">✖</button>
     </div>
 
     <!-- Messages -->
     <div class="chatbot-body">
       <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
-        {{ msg.text }}
+        <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
+          <img src="assets/bot.png" alt="Bot" class="message-bot-icon" />
+          <span class="message-text">{{ msg.text }}</span>
+        </div>
+        <div *ngIf="msg.sender === 'user'" class="message-user-content">
+          <span class="message-text">{{ msg.text }}</span>
+        </div>
       </div>
 
       <div *ngIf="loading" class="message-bot loading-msg">
-        <em>Typing...</em>
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
 

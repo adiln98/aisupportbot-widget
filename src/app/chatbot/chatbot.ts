@@ -1,4 +1,4 @@
-// chatbot.ts
+// component chatbot.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,9 +20,11 @@ interface BotResponse {
   styleUrls: ['./chatbot.scss']
 })
 export class ChatbotComponent {
-  showChat = true; // Show chat on load for standalone mode
+  showChat = false; // Hide chat on load, show only button
   input = '';
-  messages: { sender: 'user' | 'bot'; text: string }[] = [];
+  messages: { sender: 'user' | 'bot'; text: string }[] = [
+    { sender: 'bot', text: 'Hey DocNow!👋' }
+  ];
   loading = false;
 
   constructor(private chatbotService: ChatbotService) {}
