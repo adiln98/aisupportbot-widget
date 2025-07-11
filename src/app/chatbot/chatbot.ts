@@ -27,8 +27,9 @@ export class ChatbotComponent {
     { sender: 'bot', text: 'Hey DocNow!👋' }
   ];
   loading = false;
-  private pageContext: string = window.location.pathname; // fallback
+  private pageContext: string | null = window.location.pathname; // fallback
   private accessToken: string | null = null;
+  private isInitialized = false; // Track if chatbot is ready
 
   constructor(private chatbotService: ChatbotService) {
     // Listen for postMessage from parent
@@ -49,17 +50,62 @@ export class ChatbotComponent {
     });
   }
 
-  getPageContext(): string {
+  getPageContext(): string | null {
     return this.pageContext;
   }
 
   toggleChat() {
-    this.showChat = !this.showChat;
+    if (!this.showChat) {
+      // Opening chat - show immediately, validate in background
+      this.showChat = true;
+      this.messages = [
+        { sender: 'bot', text: 'Hey DocNow!👋 How can I help you today?' }
+      ];
+      
+      // Validate in background without blocking UI
+      this.validateInBackground();
+    } else {
+      // Closing chat
+      this.showChat = false;
+    }
+  }
+
+  /**
+   * Validate chatbot in background without blocking UI
+   */
+  private async validateInBackground(): Promise<void> {
+    try {
+      console.log('[Chatbot] Validating backend connection in background...');
+
+      // Validate we have basic data
+      if (!this.pageContext && !this.accessToken) {
+        console.warn('[Chatbot] No page context or token available');
+      }
+
+      // Make a test API call to validate backend connectivity
+      const testResponse = await this.chatbotService.validateConnection().toPromise();
+      
+      if (testResponse) {
+        console.log('[Chatbot] Backend connection validated successfully');
+        this.isInitialized = true;
+      }
+    } catch (error) {
+      console.error('[Chatbot] Failed to validate chatbot:', error);
+      // Don't show error to user immediately, only log it
+      // User will see error when they try to send a message
+    }
   }
 
   sendMessage() {
     const userMsg = this.input.trim();
     if (!userMsg) return;
+
+    // Check if chatbot is initialized
+    if (!this.isInitialized) {
+      console.warn('[Chatbot] Chatbot not initialized, attempting to validate...');
+      this.validateInBackground();
+      // Continue with message anyway - validation will happen in background
+    }
 
     this.messages.push({ sender: 'user', text: userMsg });
     this.input = '';

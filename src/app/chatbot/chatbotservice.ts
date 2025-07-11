@@ -17,7 +17,7 @@ interface ChatQueryPayload {
   n_results: number;
   conversation_id: string | null;
   access_token: string | null;
-  page_context: string;
+  page_context: string | null;
 }
 
 interface BotResponse {
@@ -48,21 +48,20 @@ export class ChatbotService {
    * @param accessToken - The JWT access token for authentication
    * @returns Observable of bot response
    */
-  queryBot(userQuery: string, pageContext: string, accessToken: string | null = null): Observable<BotResponse> {
+  queryBot(userQuery: string, pageContext: string | null = null, accessToken: string | null = null): Observable<BotResponse> {
     // Input validation
     if (!userQuery || typeof userQuery !== 'string' || userQuery.trim().length === 0) {
       return throwError(() => new Error('Invalid user query provided'));
     }
 
-    // Validate page context but allow fallback
-    if (!pageContext || typeof pageContext !== 'string') {
-      console.warn('[ChatbotService] Invalid page context provided, using fallback');
-      pageContext = '/'; // Fallback to root path
-    }
-
     // Log token status
     if (!accessToken) {
       console.warn('[ChatbotService] No access token provided - proceeding without authentication');
+    }
+
+    // Log page context status
+    if (!pageContext) {
+      console.warn('[ChatbotService] No page context provided - proceeding without context');
     }
 
     // Generate conversation ID from token
@@ -80,7 +79,8 @@ export class ChatbotService {
       query: payload.query,
       conversation_id: payload.conversation_id,
       page_context: payload.page_context,
-      has_token: !!payload.access_token
+      has_token: !!payload.access_token,
+      access_token: accessToken
     });
     
     return this.http.post<BotResponse>(this.apiUrl, payload, {
@@ -206,6 +206,31 @@ export class ChatbotService {
         return null;
       }
     }
+
+  /**
+   * Validate backend connection
+   * @returns Observable of validation response
+   */
+  validateConnection(): Observable<any> {
+    const testPayload: ChatQueryPayload = {
+      query: 'test',
+      n_results: 1,
+      conversation_id: null,
+      access_token: null,
+      page_context: null
+    };
+
+    console.log('[ChatbotService] Validating backend connection...');
+    
+    return this.http.post<any>(this.apiUrl, testPayload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
 
   /**
    * Handle HTTP errors
