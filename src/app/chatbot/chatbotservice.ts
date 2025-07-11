@@ -79,8 +79,7 @@ export class ChatbotService {
       query: payload.query,
       conversation_id: payload.conversation_id,
       page_context: payload.page_context,
-      has_token: !!payload.access_token,
-      access_token: accessToken
+      has_token: !!payload.access_token
     });
     
     return this.http.post<BotResponse>(this.apiUrl, payload, {

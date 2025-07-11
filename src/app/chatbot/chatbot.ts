@@ -132,17 +132,4 @@ export class ChatbotComponent {
       }
     });
   }
-
-  // private cleanHtmlResponse(htmlText: string): string {
-  //   // Remove HTML tags but keep line breaks
-  //   let cleanText = htmlText
-  //     .replace(/<br\s*\/?>/gi, '\n')  // Convert <br> to newlines
-  //     .replace(/<[^>]*>/g, '')        // Remove all other HTML tags
-  //     .replace(/&rsaquo;/g, '›')      // Convert HTML entity to simple character
-  //     .replace(/&nbsp;/g, ' ')        // Convert non-breaking space to regular space
-  //     .replace(/\n\s*\n/g, '\n')      // Remove extra blank lines
-  //     .trim();                         // Remove leading/trailing whitespace
-    
-  //   return cleanText;
-  // }
 }
