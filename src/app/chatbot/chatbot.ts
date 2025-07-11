@@ -26,8 +26,27 @@ export class ChatbotComponent {
     { sender: 'bot', text: 'Hey DocNow!👋' }
   ];
   loading = false;
+  private pageContext: string = window.location.pathname; // fallback
 
-  constructor(private chatbotService: ChatbotService) {}
+  constructor(private chatbotService: ChatbotService) {
+    // Listen for postMessage from parent
+    window.addEventListener('message', (event) => {
+      if (
+        event.origin === 'http://localhost:4200' &&
+        event.data &&
+        event.data.type === 'PAGE_CONTEXT' &&
+        typeof event.data.page_context === 'string'
+      ) {
+        this.pageContext = event.data.page_context;
+        // Optionally, log for debugging
+        // console.log('[Chatbot] Received page context:', this.pageContext);
+      }
+    });
+  }
+
+  getPageContext(): string {
+    return this.pageContext;
+  }
 
   toggleChat() {
     this.showChat = !this.showChat;
@@ -41,7 +60,7 @@ export class ChatbotComponent {
     this.input = '';
     this.loading = true;
 
-    this.chatbotService.queryBot(userMsg).subscribe({
+    this.chatbotService.queryBot(userMsg, this.getPageContext()).subscribe({
       next: (response: BotResponse) => {
         this.messages.push({ sender: 'bot', text: response.answer });
         console.log('[Chatbot Response]', response);

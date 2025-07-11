@@ -9,6 +9,7 @@ interface ChatQueryPayload {
   conversation_id?: string | null;
   user_email?: string | null;
   data_types?: string[];
+  page_context?: string;
 }
 
 interface BotResponse {
@@ -27,12 +28,13 @@ export class ChatbotService {
 
   constructor(private http: HttpClient) {}
 
-  queryBot(userQuery: string): Observable<BotResponse> {
+  queryBot(userQuery: string, pageContext: string): Observable<BotResponse> {
     const payload: ChatQueryPayload = {
       query: userQuery,
       n_results: 5,
       conversation_id: null,
       user_email: null,
+      page_context: pageContext
     };
 
     console.log('[ChatbotService] Sending payload:', payload);

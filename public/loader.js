@@ -24,6 +24,38 @@
     
     // Add to page
     document.body.appendChild(iframe);
-    
+
+    // Function to send page context to iframe
+    function sendPageContext() {
+        if (iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+                type: 'PAGE_CONTEXT',
+                page_context: window.location.pathname
+            }, 'http://localhost:3000');
+        }
+    }
+
+    // Send context after iframe loads
+    iframe.addEventListener('load', sendPageContext);
+
+    // SPA navigation support: listen for popstate and override pushState/replaceState
+    function hookHistoryEvents() {
+        const origPushState = history.pushState;
+        const origReplaceState = history.replaceState;
+        history.pushState = function() {
+            origPushState.apply(this, arguments);
+            window.dispatchEvent(new Event('locationchange'));
+        };
+        history.replaceState = function() {
+            origReplaceState.apply(this, arguments);
+            window.dispatchEvent(new Event('locationchange'));
+        };
+        window.addEventListener('popstate', function() {
+            window.dispatchEvent(new Event('locationchange'));
+        });
+    }
+    hookHistoryEvents();
+    window.addEventListener('locationchange', sendPageContext);
+
     console.log('DocNow Chatbot loaded');
 })(); 
