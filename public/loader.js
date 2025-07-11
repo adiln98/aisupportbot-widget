@@ -35,8 +35,28 @@
         }
     }
 
-    // Send context after iframe loads
-    iframe.addEventListener('load', sendPageContext);
+    // Function to send access token to iframe
+    function sendAccessToken() {
+        if (iframe.contentWindow) {
+            const tokenStr = localStorage.getItem('token');
+            if (tokenStr) {
+                const tokenObj = JSON.parse(tokenStr);
+                if (tokenObj && tokenObj.accessToken) {
+                    iframe.contentWindow.postMessage({
+                        type: 'ACCESS_TOKEN',
+                        accessToken: tokenObj.accessToken
+                    }, 'http://localhost:3000');
+                    console.log('[Loader] Sent accessToken to chatbot');
+                }
+            }
+        }
+    }
+
+    // Send context and token after iframe loads
+    iframe.addEventListener('load', function() {
+        sendPageContext();
+        sendAccessToken();
+    });
 
     // SPA navigation support: listen for popstate and override pushState/replaceState
     function hookHistoryEvents() {

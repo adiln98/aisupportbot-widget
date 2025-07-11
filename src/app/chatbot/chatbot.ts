@@ -28,19 +28,23 @@ export class ChatbotComponent {
   ];
   loading = false;
   private pageContext: string = window.location.pathname; // fallback
+  private accessToken: string | null = null;
 
   constructor(private chatbotService: ChatbotService) {
     // Listen for postMessage from parent
     window.addEventListener('message', (event) => {
-      if (
-        event.origin === environment.parentOrigin &&
-        event.data &&
-        event.data.type === 'PAGE_CONTEXT' &&
-        typeof event.data.page_context === 'string'
-      ) {
-        this.pageContext = event.data.page_context;
-        // Optionally, log for debugging
-        // console.log('[Chatbot] Received page context:', this.pageContext);
+      if (event.origin === environment.parentOrigin && event.data) {
+        // Handle page context updates
+        if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
+          this.pageContext = event.data.page_context;
+          console.log('[Chatbot] Received page context:', this.pageContext);
+        }
+        
+        // Handle access token updates
+        if (event.data.type === 'ACCESS_TOKEN' && event.data.accessToken) {
+          this.accessToken = event.data.accessToken;
+          console.log('[Chatbot] Received access token:', this.accessToken ? 'Token received' : 'No token');
+        }
       }
     });
   }
@@ -61,7 +65,10 @@ export class ChatbotComponent {
     this.input = '';
     this.loading = true;
 
-    this.chatbotService.queryBot(userMsg, this.getPageContext()).subscribe({
+    // Log the access token being used (for debugging)
+    console.log('[Chatbot] Using access token:', this.accessToken ? 'Token available' : 'No token');
+
+    this.chatbotService.queryBot(userMsg, this.getPageContext(), this.accessToken).subscribe({
       next: (response: BotResponse) => {
         this.messages.push({ sender: 'bot', text: response.answer });
         console.log('[Chatbot Response]', response);

@@ -11,6 +11,7 @@ interface ChatQueryPayload {
   user_email?: string | null;
   data_types?: string[];
   page_context?: string;
+  access_token?: string | null; // Added for authentication
 }
 
 interface BotResponse {
@@ -29,12 +30,14 @@ export class ChatbotService {
 
   constructor(private http: HttpClient) {}
 
-  queryBot(userQuery: string, pageContext: string): Observable<BotResponse> {
+
+
+  queryBot(userQuery: string, pageContext: string, accessToken: string | null = null): Observable<BotResponse> {
     const payload: ChatQueryPayload = {
       query: userQuery,
       n_results: 5,
       conversation_id: null,
-      user_email: null,
+      access_token: accessToken, // Using accessToken from postMessage
       page_context: pageContext
     };
 
