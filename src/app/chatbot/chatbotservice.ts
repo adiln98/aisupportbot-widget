@@ -5,10 +5,10 @@ import { Observable } from 'rxjs';
 
 interface ChatQueryPayload {
   query: string;
-  n_results: number;
-  conversation_id: string | null;
-  user_email: string;
-  data_types: string[];
+  n_results?: number;
+  conversation_id?: string | null;
+  user_email?: string | null;
+  data_types?: string[];
 }
 
 interface BotResponse {
@@ -30,13 +30,19 @@ export class ChatbotService {
   queryBot(userQuery: string): Observable<BotResponse> {
     const payload: ChatQueryPayload = {
       query: userQuery,
-      n_results: 3,
+      n_results: 5,
       conversation_id: null,
-      user_email: 'demo@yourcompany.com',
-      data_types: ['pdf', 'ticket']
+      user_email: null,
     };
 
     console.log('[ChatbotService] Sending payload:', payload);
-    return this.http.post<BotResponse>(this.apiUrl, payload);
+    console.log('[ChatbotService] Stringified payload:', JSON.stringify(payload, null, 2));
+    
+    return this.http.post<BotResponse>(this.apiUrl, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
   }
 }
