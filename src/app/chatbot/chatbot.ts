@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatbotService } from './chatbotservice';
+import { environment } from '../../environments/environment';
 
 interface BotResponse {
   answer: string;
@@ -32,7 +33,7 @@ export class ChatbotComponent {
     // Listen for postMessage from parent
     window.addEventListener('message', (event) => {
       if (
-        event.origin === 'http://localhost:4200' &&
+        event.origin === environment.parentOrigin &&
         event.data &&
         event.data.type === 'PAGE_CONTEXT' &&
         typeof event.data.page_context === 'string'
