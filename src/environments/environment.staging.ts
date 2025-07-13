@@ -2,12 +2,12 @@ export const environment = {
   production: false,
   
   // API URLs
-  apiUrl: 'http://localhost:8000/api/agent/query',
-  parentOrigin: 'http://localhost:4200',
+  apiUrl: 'aisupportplatformstagingurl',
+  parentOrigin: 'docnowstagingurl',
   
   // Basic settings
-  retryAttempts: 3,
-  timeout: 30000,
+  retryAttempts: 2,
+  timeout: 15000,
   
   // Logging
   enableLogging: true

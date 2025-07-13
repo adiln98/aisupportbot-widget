@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatbotService } from './chatbotservice';
 import { environment } from '../../environments/environment';
+import { Logger } from '../utils/logger';
 
 interface BotResponse {
   answer: string;
@@ -37,14 +38,15 @@ export class ChatbotComponent {
       if (event.origin === environment.parentOrigin && event.data) {
         // Handle page context updates
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
-          this.pageContext = event.data.page_context;
-          console.log('[Chatbot] Received page context:', this.pageContext);
+          // Format page context with descriptive prefix
+          this.pageContext = `I am on ${event.data.page_context}`;
+          Logger.log('Received page context:', this.pageContext);
         }
         
         // Handle access token updates
         if (event.data.type === 'ACCESS_TOKEN' && event.data.accessToken) {
           this.accessToken = event.data.accessToken;
-          console.log('[Chatbot] Received access token:', this.accessToken ? 'Token received' : 'No token');
+          Logger.log('Received access token:', this.accessToken ? 'Token received' : 'No token');
         }
       }
     });
@@ -75,22 +77,22 @@ export class ChatbotComponent {
    */
   private async validateInBackground(): Promise<void> {
     try {
-      console.log('[Chatbot] Validating backend connection in background...');
+      Logger.log('Validating backend connection in background...');
 
       // Validate we have basic data
       if (!this.pageContext && !this.accessToken) {
-        console.warn('[Chatbot] No page context or token available');
+        Logger.warn('No page context or token available');
       }
 
       // Make a test API call to validate backend connectivity
       const testResponse = await this.chatbotService.validateConnection().toPromise();
       
       if (testResponse) {
-        console.log('[Chatbot] Backend connection validated successfully');
+        Logger.log('Backend connection validated successfully');
         this.isInitialized = true;
       }
     } catch (error) {
-      console.error('[Chatbot] Failed to validate chatbot:', error);
+      Logger.error('Failed to validate chatbot:', error);
       // Don't show error to user immediately, only log it
       // User will see error when they try to send a message
     }
@@ -102,7 +104,7 @@ export class ChatbotComponent {
 
     // Check if chatbot is initialized
     if (!this.isInitialized) {
-      console.warn('[Chatbot] Chatbot not initialized, attempting to validate...');
+      Logger.warn('Chatbot not initialized, attempting to validate...');
       this.validateInBackground();
       // Continue with message anyway - validation will happen in background
     }
@@ -112,17 +114,17 @@ export class ChatbotComponent {
     this.loading = true;
 
     // Log the access token being used (for debugging)
-    console.log('[Chatbot] Using access token:', this.accessToken ? 'Token available' : 'No token');
+    Logger.log('Using access token:', this.accessToken ? 'Token available' : 'No token');
 
     this.chatbotService.queryBot(userMsg, this.getPageContext(), this.accessToken).subscribe({
       next: (response: BotResponse) => {
         this.messages.push({ sender: 'bot', text: response.answer });
-        console.log('[Chatbot Response]', response);
+        Logger.log('Chatbot Response', response);
         this.loading = false;
       },
       error: (error: any) => {
-        console.error('[Chatbot Error]', error);
-        console.error('[Error Details]', {
+        Logger.error('Chatbot Error', error);
+        Logger.error('Error Details', {
           status: error?.status,
           message: error?.message,
           url: error?.url
