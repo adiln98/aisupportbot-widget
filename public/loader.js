@@ -12,7 +12,7 @@
     iframe.id = 'docnow-chatbot-widget';
     // Development URL (commented for reference)
     iframe.src = 'http://localhost:3000/browser/';
-    // Production URL
+    // Production URL of widget
     // iframe.src = 'https://your-chatbot-domain.com/browser/';
     iframe.style.cssText = `
         position: fixed;
@@ -36,7 +36,7 @@
                 page_context: window.location.pathname
             // Development URL (commented for reference)
             }, 'http://localhost:3000');
-            // Production URL
+            // Production URL of widget
             // }, 'https://your-chatbot-domain.com');
         }
     }
@@ -53,7 +53,7 @@
                         accessToken: tokenObj.accessToken
                     // Development URL (commented for reference)
                     }, 'http://localhost:3000');
-                    // Production URL
+                    // Production URL of widget
                     // }, 'https://your-chatbot-domain.com');
                     console.log('[Loader] Sent accessToken to chatbot');
                 }
