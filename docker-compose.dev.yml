@@ -1,0 +1,21 @@
+services:
+  chatbot-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./angular.json:/app/angular.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.app.json:/app/tsconfig.app.json
+      - ./package.json:/app/package.json
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    # Enable hot reload by watching for file changes
+    command: npm start -- --host 0.0.0.0 --poll 2000 
