@@ -17,6 +17,7 @@ interface ChatQueryPayload {
   conversation_id: string | null;
   access_token: string | null;
   page_context: string | null;
+  user_id: string | null;
 }
 
 interface BotResponse {
@@ -66,18 +67,23 @@ export class ChatbotService {
     // Generate conversation ID from token
     const conversationId = this.getConversationIdFromToken(accessToken);
     
+    // Extract username from token to use as user ID
+    const userId = this.getUsernameFromToken(accessToken);
+    
     const payload: ChatQueryPayload = {
       query: userQuery.trim(),
       n_results: 5, // Default value
       conversation_id: conversationId,
       access_token: accessToken,
-      page_context: pageContext
+      page_context: pageContext,
+      user_id: userId
     };
 
     Logger.log('Sending chatbot query with payload:', {
       query: payload.query,
       conversation_id: payload.conversation_id,
       page_context: payload.page_context,
+      user_id: payload.user_id,
       has_token: !!payload.access_token
     });
     
@@ -206,6 +212,33 @@ export class ChatbotService {
   }
 
   /**
+   * Get username from JWT token
+   * @param accessToken - The JWT access token
+   * @returns Username string or null if token is invalid
+   */
+  private getUsernameFromToken(accessToken: string | null): string | null {
+    if (!accessToken) {
+      Logger.debug('No access token provided for username extraction');
+      return null;
+    }
+
+    const decodedToken = this.decodeToken(accessToken);
+    if (!decodedToken) {
+      Logger.warn('Failed to decode token for username extraction');
+      return null;
+    }
+
+    const username = this.extractUsername(decodedToken);
+    if (!username) {
+      Logger.warn('No username found in token');
+      return null;
+    }
+
+    Logger.debug('Successfully extracted username:', username);
+    return username;
+  }
+
+  /**
    * Validate backend connection
    * @returns Observable of validation response
    */
@@ -215,7 +248,8 @@ export class ChatbotService {
       n_results: 1,
       conversation_id: null,
       access_token: null,
-      page_context: null
+      page_context: null,
+      user_id: null
     };
 
     Logger.log('Validating backend connection...');
