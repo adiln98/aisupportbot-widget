@@ -1,6 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { AppComponent } from './app/app'; // <-- this is your actual root
-import { appConfig } from './app/app.config';
+import { ChatbotComponent } from './app/chatbot/chatbot';
+import { ChatbotService } from './app/chatbot/chatbotservice';
+import { provideHttpClient } from '@angular/common/http';
 
-bootstrapApplication(AppComponent, appConfig)
-  .catch(err => console.error(err));
+bootstrapApplication(ChatbotComponent, {
+  providers: [provideHttpClient(), ChatbotService]
+}).catch(err => console.error(err));
