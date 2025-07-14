@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ChatbotService } from './chatbotservice';
 import { environment } from '../../environments/environment';
 import { Logger } from '../utils/logger';
@@ -85,7 +86,7 @@ export class ChatbotComponent {
       }
 
       // Make a test API call to validate backend connectivity
-      const testResponse = await this.chatbotService.validateConnection().toPromise();
+      const testResponse = await firstValueFrom(this.chatbotService.validateConnection());
       
       if (testResponse) {
         Logger.log('Backend connection validated successfully');
@@ -129,7 +130,7 @@ export class ChatbotComponent {
           message: error?.message,
           url: error?.url
         });
-        this.messages.push({ sender: 'bot', text: 'Sorry, something went wrong. Check console for details.' });
+        this.messages.push({ sender: 'bot', text: 'Sorry, something went wrong. I cannot help you right now. Please try again later.' });
         this.loading = false;
       }
     });
