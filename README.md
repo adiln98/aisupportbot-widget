@@ -16,7 +16,7 @@ chatbot-widget/
 │   ├── environments/         # Environment configuration
 │   │   ├── environment.ts    # Development
 │   │   ├── environment.prod.ts # Production
-│   │   └── environment.staging.ts # Staging
+│   │   
 │   └── assets/              # Images and static files
 ```
 
@@ -40,7 +40,7 @@ export const environment = {
 // src/environments/environment.prod.ts
 export const environment = {
   production: true,
-  apiUrl: 'https://api.docnow.com/api/agent/query',
+  apiUrl: '',
   parentOrigin: 'https://docnow.com',
   retryAttempts: 2,
   timeout: 20000
@@ -77,11 +77,6 @@ ng build --configuration=production
 npx serve dist/chatbot-widget/browser --single
 ```
 
-### Staging Build
-```bash
-ng build --configuration=staging
-npx serve dist/chatbot-widget/browser --single
-```
 
 ##################### Integration
 
@@ -93,7 +88,7 @@ ng build --configuration=production
 ### 2. Copy Build Files
 Copy the contents of `dist/chatbot-widget/browser/` to your web server.
 
-### 3. Include in Your Website
+### 3. Include in Your Website of Parent Company Code
 ```html
 <!-- Add this to your HTML -->
 <script src=""></script>
@@ -116,10 +111,6 @@ window.postMessage({
 
 ## Configuration
 
-### API Endpoints
-- **Development**: `http://localhost:8000/api/agent/query`
-- **Production**: `https://api.docnow.com/api/agent/query`
-- **Staging**: `https://staging-api.docnow.com/api/agent/query`
 
 ### Widget Settings
 - **Position**: Bottom-right corner

@@ -60,27 +60,7 @@
                 }
               ]
             },
-            "staging": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
-              "outputHashing": "all",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.staging.ts"
-                }
-              ]
-            },
+
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -98,9 +78,7 @@
             "production": {
               "buildTarget": "chatbot-widget:build:production"
             },
-            "staging": {
-              "buildTarget": "chatbot-widget:build:staging"
-            },
+
             "development": {
               "buildTarget": "chatbot-widget:build:development"
             }

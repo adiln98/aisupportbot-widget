@@ -2,6 +2,16 @@
 (function() {
     'use strict';
     
+    // ===== CONFIGURATION - CHANGE THESE URLs FOR DIFFERENT ENVIRONMENTS =====
+    // Development URLs (ACTIVE)
+    const WIDGET_URL = 'http://localhost:3000/browser/';
+    const WIDGET_ORIGIN = 'http://localhost:3000';
+    
+    // Production URLs (COMMENTED OUT)
+    // const WIDGET_URL = 'https://widget.doctornow.io/browser/';
+    // const WIDGET_ORIGIN = 'https://widget.doctornow.io';
+    // ===== END CONFIGURATION =====
+    
     // Check if widget already exists
     if (document.getElementById('docnow-chatbot-widget')) {
         return;
@@ -10,10 +20,7 @@
     // Create iframe to load the Angular app
     const iframe = document.createElement('iframe');
     iframe.id = 'docnow-chatbot-widget';
-    // Development URL (commented for reference)
-    iframe.src = 'http://localhost:3000/browser/';
-    // Production URL of widget
-    // iframe.src = 'https://your-chatbot-domain.com/browser/';
+    iframe.src = WIDGET_URL;
     iframe.style.cssText = `
         position: fixed;
         bottom: 30px;
@@ -34,10 +41,7 @@
             iframe.contentWindow.postMessage({
                 type: 'PAGE_CONTEXT',
                 page_context: window.location.pathname
-            // Development URL (commented for reference)
-            }, 'http://localhost:3000');
-            // Production URL of widget
-            // }, 'https://your-chatbot-domain.com');
+            }, WIDGET_ORIGIN);
         }
     }
 
@@ -51,10 +55,7 @@
                     iframe.contentWindow.postMessage({
                         type: 'ACCESS_TOKEN',
                         accessToken: tokenObj.accessToken
-                    // Development URL (commented for reference)
-                    }, 'http://localhost:3000');
-                    // Production URL of widget
-                    // }, 'https://your-chatbot-domain.com');
+                    }, WIDGET_ORIGIN);
                     console.log('[Loader] Sent accessToken to chatbot');
                 }
             }
@@ -86,5 +87,5 @@
     hookHistoryEvents();
     window.addEventListener('locationchange', sendPageContext);
 
-    console.log('DocNow Chatbot loaded');
+    console.log('DocNow Chatbot loaded with Updated Loader');
 })(); 
