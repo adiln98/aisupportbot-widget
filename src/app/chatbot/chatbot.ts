@@ -7,6 +7,7 @@ import { ChatbotService } from './chatbotservice';
 import { environment } from '../../environments/environment';
 import { Logger } from '../utils/logger';
 
+// ===== INTERFACES =====
 interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
@@ -21,6 +22,7 @@ interface BotResponse {
   docs?: any;
 }
 
+// ===== COMPONENT =====
 @Component({
   selector: 'app-chatbot',
   standalone: true,
@@ -29,6 +31,7 @@ interface BotResponse {
   styleUrls: ['./chatbot.scss']
 })
 export class ChatbotComponent implements OnDestroy {
+  // ===== PUBLIC PROPERTIES =====
   showChat = false;
   isClosing = false;
   input = '';
@@ -36,12 +39,17 @@ export class ChatbotComponent implements OnDestroy {
     { sender: 'bot', text: 'Hey DocNow!👋', timestamp: new Date() }
   ];
   loading = false;
+
+  // ===== PRIVATE PROPERTIES =====
   private pageContext: string | null = window.location.pathname;
   private accessToken: string | null = null;
   private isInitialized = false;
   private closeTimeout?: number;
+  private isHovered = false;
 
+  // ===== CONSTRUCTOR & INITIALIZATION =====
   constructor(private chatbotService: ChatbotService) {
+    // Listen for messages from parent page (JavaScript → TypeScript)
     window.addEventListener('message', (event) => {
       if (event.origin === environment.parentOrigin && event.data) {
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
@@ -57,6 +65,7 @@ export class ChatbotComponent implements OnDestroy {
     });
   }
 
+  // ===== LIFECYCLE METHODS =====
   ngOnDestroy(): void {
     if (this.closeTimeout) {
       clearTimeout(this.closeTimeout);
@@ -64,8 +73,16 @@ export class ChatbotComponent implements OnDestroy {
     }
   }
 
-  getPageContext(): string | null {
-    return this.pageContext;
+  // ===== PUBLIC METHODS =====
+  // Handle button hover events
+  onButtonMouseEnter(): void {
+    this.isHovered = true;
+    this.notifyParentState();
+  }
+
+  onButtonMouseLeave(): void {
+    this.isHovered = false;
+    this.notifyParentState();
   }
 
   toggleChat(): void {
@@ -76,41 +93,9 @@ export class ChatbotComponent implements OnDestroy {
         { sender: 'bot', text: 'Hey DocNow!👋 How can I help you today?', timestamp: new Date() }
       ];
       this.validateInBackground();
+      this.notifyParentState();
     } else if (this.showChat && !this.isClosing) {
       this.closeChat();
-    }
-  }
-
-  private closeChat(): void {
-    if (this.closeTimeout) {
-      clearTimeout(this.closeTimeout);
-    }
-
-    this.isClosing = true;
-    
-    this.closeTimeout = window.setTimeout(() => {
-      this.showChat = false;
-      this.isClosing = false;
-      this.closeTimeout = undefined;
-    }, 150);
-  }
-
-  private async validateInBackground(): Promise<void> {
-    try {
-      Logger.log('Validating backend connection in background...');
-
-      if (!this.pageContext && !this.accessToken) {
-        Logger.warn('No page context or token available');
-      }
-
-      const testResponse = await firstValueFrom(this.chatbotService.validateConnection());
-      
-      if (testResponse) {
-        Logger.log('Backend connection validated successfully');
-        this.isInitialized = true;
-      }
-    } catch (error) {
-      Logger.error('Failed to validate chatbot:', error);
     }
   }
 
@@ -154,6 +139,56 @@ export class ChatbotComponent implements OnDestroy {
     });
   }
 
+  // ===== PRIVATE METHODS =====
+  // Notify parent page of widget state (TypeScript → JavaScript)
+  private notifyParentState(): void {
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'WIDGET_STATE_CHANGE',
+          isOpen: this.showChat,
+          isHovered: this.isHovered
+        }, '*');
+      }
+    } catch (error) {
+      Logger.error('Failed to notify parent of state change:', error);
+    }
+  }
+
+  private closeChat(): void {
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+    }
+
+    this.isClosing = true;
+    
+    this.closeTimeout = window.setTimeout(() => {
+      this.showChat = false;
+      this.isClosing = false;
+      this.closeTimeout = undefined;
+      this.notifyParentState();
+    }, 150);
+  }
+
+  private async validateInBackground(): Promise<void> {
+    try {
+      Logger.log('Validating backend connection in background...');
+
+      if (!this.pageContext && !this.accessToken) {
+        Logger.warn('No page context or token available');
+      }
+
+      const testResponse = await firstValueFrom(this.chatbotService.validateConnection());
+      
+      if (testResponse) {
+        Logger.log('Backend connection validated successfully');
+        this.isInitialized = true;
+      }
+    } catch (error) {
+      Logger.error('Failed to validate chatbot:', error);
+    }
+  }
+
   private handleError(error: any): void {
     this.loading = false;
     this.messages.push({ 
@@ -162,5 +197,10 @@ export class ChatbotComponent implements OnDestroy {
       timestamp: new Date()
     });
     Logger.error('Chatbot Error:', error);
+  }
+
+  // ===== UTILITY METHODS =====
+  getPageContext(): string | null {
+    return this.pageContext;
   }
 }

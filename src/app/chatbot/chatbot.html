@@ -3,7 +3,7 @@
 
 <div class="chatbot-container">
   <!-- Chat Icon -->
-  <button *ngIf="!showChat" class="chatbot-button" (click)="toggleChat()">
+  <button *ngIf="!showChat" class="chatbot-button" (click)="toggleChat()" (mouseenter)="onButtonMouseEnter()" (mouseleave)="onButtonMouseLeave()">
     <!-- Initial logo (centered) -->
     <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-initial" />
     

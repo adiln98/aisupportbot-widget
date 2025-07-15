@@ -12,6 +12,7 @@
     // const WIDGET_ORIGIN = 'https://widget.doctornow.io';
     // ===== END CONFIGURATION =====
     
+    // ===== INITIALIZATION =====
     // Check if widget already exists
     if (document.getElementById('docnow-chatbot-widget')) {
         return;
@@ -23,17 +24,25 @@
     iframe.src = WIDGET_URL;
     iframe.style.cssText = `
         position: fixed;
-        bottom: 30px;
+        bottom: 20px;
         right: 20px;
-        width: 400px;
-        height: 500px;
+        width: 68px;
+        height: 68px;
         border: none;
         z-index: 1000;
         background: transparent;
+        transition: all 0.3s ease-out;
     `;
     
     // Add to page
     document.body.appendChild(iframe);
+    
+    // ===== UTILITY FUNCTIONS =====
+    // Function to resize iframe
+    function resizeIframe(width, height) {
+        iframe.style.width = width + 'px';
+        iframe.style.height = height + 'px';
+    }
 
     // Function to send page context to iframe
     function sendPageContext() {
@@ -62,13 +71,7 @@
         }
     }
 
-    // Send context and token after iframe loads
-    iframe.addEventListener('load', function() {
-        sendPageContext();
-        sendAccessToken();
-    });
-
-    // SPA navigation support: listen for popstate and override pushState/replaceState
+    // Function to handle SPA navigation
     function hookHistoryEvents() {
         const origPushState = history.pushState;
         const origReplaceState = history.replaceState;
@@ -84,8 +87,38 @@
             window.dispatchEvent(new Event('locationchange'));
         });
     }
+    
+    // ===== EVENT LISTENERS =====
+    // Listen for messages from the widget (TypeScript → JavaScript)
+    window.addEventListener('message', function(event) {
+        if (event.origin !== WIDGET_ORIGIN) return;
+        
+        if (event.data.type === 'WIDGET_STATE_CHANGE') {
+            const { isOpen, isHovered } = event.data;
+            
+            if (isOpen) {
+                // Widget is open - expand iframe for popup
+                resizeIframe(350, 450);
+            } else if (isHovered) {
+                // Widget is hovered - expand iframe for button hover
+                resizeIframe(200, 68);
+            } else {
+                // Widget is closed - shrink iframe for button only
+                resizeIframe(68, 68);
+            }
+        }
+    });
+
+    // Send context and token after iframe loads (JavaScript → TypeScript)
+    iframe.addEventListener('load', function() {
+        sendPageContext();
+        sendAccessToken();
+    });
+
+    // Handle SPA navigation changes (JavaScript → TypeScript)
     hookHistoryEvents();
     window.addEventListener('locationchange', sendPageContext);
-
-    console.log('DocNow Chatbot loaded with Updated Loader');
+    
+    // ===== INITIALIZATION COMPLETE =====
+    console.log('DocNow Chatbot loaded with Smart Sizing');
 })(); 

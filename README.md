@@ -112,12 +112,6 @@ window.postMessage({
 ## Configuration
 
 
-### Widget Settings
-- **Position**: Bottom-right corner
-- **Size**: 400px width, 600px height
-- **Theme**: Light mode (configurable)
-- **Z-index**: 9999
-
 ## API Communication
 
 The widget sends POST requests to the configured API endpoint with:
