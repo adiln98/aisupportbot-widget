@@ -4,16 +4,22 @@
 <div class="chatbot-container">
   <!-- Chat Icon -->
   <button *ngIf="!showChat" class="chatbot-button" (click)="toggleChat()">
-    <img src="assets/bot.png" alt="Bot" class="button-bot-icon" />
-    <span class="button-text">DocNow Assistant</span>
+    <!-- Initial logo (centered) -->
+    <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-initial" />
+    
+    <!-- Hover content (logo + text) -->
+    <div class="button-content">
+      <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-hover" />
+      <span class="button-text">DocNow Assistant</span>
+    </div>
   </button>
 
   <!-- Chat Popup -->
-  <div *ngIf="showChat" class="chatbot-popup">
+  <div *ngIf="showChat" class="chatbot-popup" [ngClass]="{'closing': isClosing}">
     <!-- Header -->
     <div class="chatbot-header">
       <div class="header-left">
-        <img src="assets/bot.png" alt="Bot" class="bot-icon" />
+        <img src="assets/dnlogo.png" alt="DocNow" class="bot-icon" />
         <span class="header-title">DocNow Assistant</span>
       </div>
       <button class="close-btn" (click)="toggleChat()">✖</button>
@@ -23,7 +29,6 @@
     <div class="chatbot-body">
       <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
         <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
-          <img src="assets/bot.png" alt="Bot" class="message-bot-icon" />
           <span class="message-text" [innerHTML]="msg.text"></span>
         </div>
         <div *ngIf="msg.sender === 'user'" class="message-user-content">
@@ -31,6 +36,7 @@
         </div>
       </div>
 
+      <!-- Loading Indicator -->
       <div *ngIf="loading" class="message-bot loading-msg">
         <div class="typing-indicator">
           <span></span>
@@ -42,8 +48,16 @@
 
     <!-- Input -->
     <div class="chatbot-footer">
-      <input [(ngModel)]="input" (keyup.enter)="sendMessage()" placeholder="Ask something..." />
-      <button (click)="sendMessage()">Send</button>
+      <input 
+        [(ngModel)]="input" 
+        (keyup.enter)="sendMessage()" 
+        placeholder="Ask something..." 
+      />
+      <button 
+        (click)="sendMessage()" 
+      >
+        Send
+      </button>
     </div>
   </div>
 </div>
