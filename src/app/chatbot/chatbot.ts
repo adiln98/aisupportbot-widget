@@ -50,6 +50,7 @@ export class ChatbotComponent implements OnDestroy {
   private closeTimeout?: number;
   private isHovered = false;
   private hasSearchedDocuments = false;
+  private isSearching = false;
 
   // ===== CONSTRUCTOR & INITIALIZATION =====
   constructor(private chatbotService: ChatbotService) {
@@ -77,7 +78,8 @@ export class ChatbotComponent implements OnDestroy {
             
             // Re-run document search with new context
             this.hasSearchedDocuments = false;
-            if (this.pageContext) {
+            if (this.pageContext && !this.isSearching) {
+              Logger.log('Starting document search for new page context:', this.pageContext);
               this.searchDocumentsInBackground();
             }
           } else {
@@ -85,8 +87,9 @@ export class ChatbotComponent implements OnDestroy {
             this.pageContext = processedPageContext;
             
             // Search documents only once when page context is first received
-            if (!this.hasSearchedDocuments && this.pageContext) {
+            if (!this.hasSearchedDocuments && this.pageContext && !this.isSearching) {
               this.hasSearchedDocuments = true;
+              Logger.log('Starting initial document search for page context:', this.pageContext);
               this.searchDocumentsInBackground();
             }
           }
@@ -230,6 +233,12 @@ export class ChatbotComponent implements OnDestroy {
   }
 
     private async searchDocumentsInBackground(): Promise<void> {
+    if (this.isSearching) {
+      Logger.log('Document search already in progress, skipping...');
+      return;
+    }
+
+    this.isSearching = true;
     try {
       Logger.log('Searching documents in background...');
 
@@ -266,6 +275,8 @@ export class ChatbotComponent implements OnDestroy {
       Logger.error('Failed to search documents:', error);
       // Remove loading message on error too
       this.removeLoadingMessage();
+    } finally {
+      this.isSearching = false;
     }
   }
 
@@ -375,6 +386,9 @@ export class ChatbotComponent implements OnDestroy {
     
     // Clear any pending input
     this.input = '';
+    
+    // Reset searching flag
+    this.isSearching = false;
     
     Logger.log('Chatbot state reset for new page context');
   }
