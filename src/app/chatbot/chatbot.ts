@@ -39,6 +39,7 @@ export class ChatbotComponent implements OnDestroy {
     { sender: 'bot', text: 'Hey DocNow!👋', timestamp: new Date() }
   ];
   loading = false;
+  documents: any[] = [];
 
   // ===== PRIVATE PROPERTIES =====
   private pageContext: string | null = window.location.pathname;
@@ -195,33 +196,84 @@ export class ChatbotComponent implements OnDestroy {
     }
   }
 
-  private async searchDocumentsInBackground(): Promise<void> {
+    private async searchDocumentsInBackground(): Promise<void> {
     try {
       Logger.log('Searching documents in background...');
 
       // Convert page context to keywords array
       const keywords = this.pageContext ? [this.pageContext] : [];
-
+      
       const documentsResponse = await firstValueFrom(this.chatbotService.searchDocumentsByKeywords(keywords, this.accessToken));
-
+      
       if (documentsResponse) {
         Logger.log('Documents search completed successfully:', documentsResponse);
-        // You can store the documents in a component property if needed
-        // this.documents = documentsResponse;
+        
+        // Store the documents
+        this.documents = documentsResponse;
+        
+        // Add a message to the chat with the documents data
+        this.addDocumentsMessage(documentsResponse);
       }
     } catch (error) {
       Logger.error('Failed to search documents:', error);
     }
   }
 
-  private handleError(error: any): void {
+    private handleError(error: any): void {
     this.loading = false;
-    this.messages.push({
-      sender: 'bot',
+    this.messages.push({ 
+      sender: 'bot', 
       text: 'Sorry, something went wrong. Please try again.',
       timestamp: new Date()
     });
     Logger.error('Chatbot Error:', error);
+  }
+
+  private addDocumentsMessage(documentsData: any): void {
+    let messageText = '📄 **Documents Found:**\n\n';
+    
+    if (Array.isArray(documentsData) && documentsData.length > 0) {
+      documentsData.forEach((doc: any, index: number) => {
+        messageText += `**${index + 1}. ${doc.title || doc.name || 'Untitled Document'}**\n`;
+        if (doc.description) {
+          messageText += `${doc.description}\n`;
+        }
+        if (doc.url) {
+          messageText += `🔗 [View Document](${doc.url})\n`;
+        }
+        if (doc.tags && Array.isArray(doc.tags)) {
+          messageText += `🏷️ Tags: ${doc.tags.join(', ')}\n`;
+        }
+        messageText += '\n';
+      });
+    } else if (typeof documentsData === 'object' && documentsData.documents) {
+      // Handle case where response has a documents property
+      const docs = documentsData.documents;
+      if (Array.isArray(docs) && docs.length > 0) {
+        docs.forEach((doc: any, index: number) => {
+          messageText += `**${index + 1}. ${doc.title || doc.name || 'Untitled Document'}**\n`;
+          if (doc.description) {
+            messageText += `${doc.description}\n`;
+          }
+          if (doc.url) {
+            messageText += `🔗 [View Document](${doc.url})\n`;
+          }
+          if (doc.tags && Array.isArray(doc.tags)) {
+            messageText += `🏷️ Tags: ${doc.tags.join(', ')}\n`;
+          }
+          messageText += '\n';
+        });
+      }
+    } else {
+      messageText = '📄 No documents found for the current context.';
+    }
+
+    // Add the message to the chat
+    this.messages.push({
+      sender: 'bot',
+      text: messageText,
+      timestamp: new Date()
+    });
   }
 
   // ===== UTILITY METHODS =====
