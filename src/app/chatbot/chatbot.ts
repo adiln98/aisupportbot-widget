@@ -54,11 +54,15 @@ export class ChatbotComponent implements OnDestroy {
       if (event.origin === environment.parentOrigin && event.data) {
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
           this.pageContext = event.data.page_context;
-          
-          // Fetch documents when page context is received
-          this.fetchDocumentsInBackground();
+
+          if (this.pageContext) {
+            this.pageContext = this.pageContext?.slice(1, this.pageContext.length);
+          }
+
+          // Search documents when page context is received
+          this.searchDocumentsInBackground();
         }
-        
+
         if (event.data.type === 'ACCESS_TOKEN' && event.data.accessToken) {
           this.accessToken = event.data.accessToken;
           Logger.log('Received access token:', this.accessToken ? 'Token received' : 'No token');
@@ -110,10 +114,10 @@ export class ChatbotComponent implements OnDestroy {
       this.validateInBackground();
     }
 
-    this.messages.push({ 
-      sender: 'user', 
-      text: userMsg, 
-      timestamp: new Date() 
+    this.messages.push({
+      sender: 'user',
+      text: userMsg,
+      timestamp: new Date()
     });
     this.input = '';
     this.loading = true;
@@ -122,10 +126,10 @@ export class ChatbotComponent implements OnDestroy {
 
     this.chatbotService.queryBot(userMsg, this.getPageContext(), this.accessToken).subscribe({
       next: (response: BotResponse) => {
-        this.messages.push({ 
-          sender: 'bot', 
-          text: response.answer, 
-          timestamp: new Date() 
+        this.messages.push({
+          sender: 'bot',
+          text: response.answer,
+          timestamp: new Date()
         });
         Logger.log('Chatbot Response', response);
         this.loading = false;
@@ -163,7 +167,7 @@ export class ChatbotComponent implements OnDestroy {
     }
 
     this.isClosing = true;
-    
+
     this.closeTimeout = window.setTimeout(() => {
       this.showChat = false;
       this.isClosing = false;
@@ -181,7 +185,7 @@ export class ChatbotComponent implements OnDestroy {
       }
 
       const testResponse = await firstValueFrom(this.chatbotService.validateConnection());
-      
+
       if (testResponse) {
         Logger.log('Backend connection validated successfully');
         this.isInitialized = true;
@@ -191,29 +195,29 @@ export class ChatbotComponent implements OnDestroy {
     }
   }
 
-  private async fetchDocumentsInBackground(): Promise<void> {
+  private async searchDocumentsInBackground(): Promise<void> {
     try {
-      Logger.log('Fetching documents in background...');
+      Logger.log('Searching documents in background...');
 
-      // Extract the page context value for the API call
-      const pageContextValue = this.pageContext?.slice(1, this.pageContext.length);
-      
-      const documentsResponse = await firstValueFrom(this.chatbotService.fetchDocuments(pageContextValue, this.accessToken));
-      
+      // Convert page context to keywords array
+      const keywords = this.pageContext ? [this.pageContext] : [];
+
+      const documentsResponse = await firstValueFrom(this.chatbotService.searchDocumentsByKeywords(keywords, this.accessToken));
+
       if (documentsResponse) {
-        Logger.log('Documents fetched successfully:', documentsResponse);
+        Logger.log('Documents search completed successfully:', documentsResponse);
         // You can store the documents in a component property if needed
         // this.documents = documentsResponse;
       }
     } catch (error) {
-      Logger.error('Failed to fetch documents:', error);
+      Logger.error('Failed to search documents:', error);
     }
   }
 
   private handleError(error: any): void {
     this.loading = false;
-    this.messages.push({ 
-      sender: 'bot', 
+    this.messages.push({
+      sender: 'bot',
       text: 'Sorry, something went wrong. Please try again.',
       timestamp: new Date()
     });

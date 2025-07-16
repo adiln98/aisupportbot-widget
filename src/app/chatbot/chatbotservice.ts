@@ -38,7 +38,7 @@ interface DecodedToken {
 })
 export class ChatbotService {
   private readonly apiUrl = environment.apiUrl;
-  private readonly docsUrl = environment.docsUrl;
+  private readonly docsKeywordSearchUrl = environment.docsKeywordSearchUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -240,13 +240,13 @@ export class ChatbotService {
   }
 
   /**
-   * Fetch documents from docs API
-   * @param pageContext - The page context to filter documents by
+   * Search documents by keywords
+   * @param keywords - Array of keywords to search for
    * @param accessToken - The JWT access token for authentication
    * @returns Observable of documents response
    */
-  fetchDocuments(pageContext: string | null = null, accessToken: string | null = null): Observable<any> {
-    Logger.log('Fetching documents from docs API with page context:', pageContext);
+  searchDocumentsByKeywords(keywords: string[], accessToken: string | null = null): Observable<any> {
+    Logger.log('Searching documents by keywords:', keywords);
 
     const headers: { [key: string]: string } = {
       'Content-Type': 'application/json',
@@ -257,17 +257,13 @@ export class ChatbotService {
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    // Build URL with query parameters
-    let url = this.docsUrl;
-    if (pageContext) {
-      const params = new URLSearchParams();
-      params.append('tags', pageContext);
-      url = `${this.docsUrl}?${params.toString()}`;
-    }
+    const requestBody = {
+      keywords: keywords
+    };
 
-    Logger.log('Making request to:', url);
+    Logger.log('Making POST request to:', this.docsKeywordSearchUrl);
 
-    return this.http.get<any>(url, { headers }).pipe(
+    return this.http.post<any>(this.docsKeywordSearchUrl, requestBody, { headers }).pipe(
       retry(environment.retryAttempts),
       catchError(this.handleError.bind(this))
     );
