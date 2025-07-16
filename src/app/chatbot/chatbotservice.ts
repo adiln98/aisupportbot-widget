@@ -38,6 +38,7 @@ interface DecodedToken {
 })
 export class ChatbotService {
   private readonly apiUrl = environment.apiUrl;
+  private readonly docsUrl = environment.docsUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -66,13 +67,13 @@ export class ChatbotService {
 
     // Generate conversation ID from token
     const conversationId = this.getConversationIdFromToken(accessToken);
-    
+
     // Extract username from token to use as user ID
     const userId = this.getUsernameFromToken(accessToken);
-    
+
     const payload: ChatQueryPayload = {
       query: userQuery.trim(),
-      n_results: 5, // Default value
+      n_results: 3, // Default value
       conversation_id: conversationId,
       access_token: accessToken,
       page_context: pageContext,
@@ -86,7 +87,7 @@ export class ChatbotService {
       user_id: payload.user_id,
       has_token: !!payload.access_token
     });
-    
+
     return this.http.post<BotResponse>(this.apiUrl, payload, {
       headers: {
         'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export class ChatbotService {
 
     try {
       const parts = accessToken.split('.');
-      
+
       if (parts.length !== JWT_PARTS_COUNT) {
         Logger.error('Invalid JWT token format: expected 3 parts');
         return null;
@@ -119,7 +120,7 @@ export class ChatbotService {
 
       const payload = parts[JWT_PAYLOAD_INDEX];
       const decodedPayload = JSON.parse(atob(payload));
-      
+
       Logger.debug('Successfully decoded token payload');
       return decodedPayload;
     } catch (error) {
@@ -140,7 +141,7 @@ export class ChatbotService {
     }
 
     const username = decodedToken.username;
-    
+
     if (!username || typeof username !== 'string') {
       Logger.warn('No valid username found in token');
       return null;
@@ -161,21 +162,21 @@ export class ChatbotService {
     }
 
     const now = new Date();
-    
+
     // Format: YYYYMMDD
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const dateString = `${year}${month}${day}`;
-    
+
     // Format: HHMMSS
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const timeString = `${hours}${minutes}${seconds}`;
-    
+
     const conversationId = `${CONVERSATION_ID_PREFIX}${dateString}_${timeString}_${username}`;
-    
+
     Logger.debug('Generated conversation ID:', conversationId);
     return conversationId;
   }
@@ -239,6 +240,40 @@ export class ChatbotService {
   }
 
   /**
+   * Fetch documents from docs API
+   * @param pageContext - The page context to filter documents by
+   * @param accessToken - The JWT access token for authentication
+   * @returns Observable of documents response
+   */
+  fetchDocuments(pageContext: string | null = null, accessToken: string | null = null): Observable<any> {
+    Logger.log('Fetching documents from docs API with page context:', pageContext);
+
+    const headers: { [key: string]: string } = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
+    // Build URL with query parameters
+    let url = this.docsUrl;
+    if (pageContext) {
+      const params = new URLSearchParams();
+      params.append('tags', pageContext);
+      url = `${this.docsUrl}?${params.toString()}`;
+    }
+
+    Logger.log('Making request to:', url);
+
+    return this.http.get<any>(url, { headers }).pipe(
+      retry(environment.retryAttempts),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
    * Validate backend connection
    * @returns Observable of validation response
    */
@@ -253,7 +288,7 @@ export class ChatbotService {
     };
 
     Logger.log('Validating backend connection...');
-    
+
     return this.http.post<any>(this.apiUrl, testPayload, {
       headers: {
         'Content-Type': 'application/json',
@@ -271,7 +306,7 @@ export class ChatbotService {
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';
-    
+
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       errorMessage = `Client error: ${error.error.message}`;
@@ -279,7 +314,7 @@ export class ChatbotService {
       // Server-side error
       errorMessage = `Server error: ${error.status} - ${error.message}`;
     }
-    
+
     Logger.error('HTTP error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }

@@ -53,8 +53,10 @@ export class ChatbotComponent implements OnDestroy {
     window.addEventListener('message', (event) => {
       if (event.origin === environment.parentOrigin && event.data) {
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
-          this.pageContext = `I am on ${event.data.page_context}`;
-          Logger.log('Received page context:', this.pageContext);
+          this.pageContext = event.data.page_context;
+          
+          // Fetch documents when page context is received
+          this.fetchDocumentsInBackground();
         }
         
         if (event.data.type === 'ACCESS_TOKEN' && event.data.accessToken) {
@@ -186,6 +188,25 @@ export class ChatbotComponent implements OnDestroy {
       }
     } catch (error) {
       Logger.error('Failed to validate chatbot:', error);
+    }
+  }
+
+  private async fetchDocumentsInBackground(): Promise<void> {
+    try {
+      Logger.log('Fetching documents in background...');
+
+      // Extract the page context value for the API call
+      const pageContextValue = this.pageContext?.slice(1, this.pageContext.length);
+      
+      const documentsResponse = await firstValueFrom(this.chatbotService.fetchDocuments(pageContextValue, this.accessToken));
+      
+      if (documentsResponse) {
+        Logger.log('Documents fetched successfully:', documentsResponse);
+        // You can store the documents in a component property if needed
+        // this.documents = documentsResponse;
+      }
+    } catch (error) {
+      Logger.error('Failed to fetch documents:', error);
     }
   }
 
