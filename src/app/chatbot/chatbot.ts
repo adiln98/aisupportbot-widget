@@ -37,13 +37,14 @@ export class ChatbotComponent implements OnDestroy {
   isClosing = false;
   input = '';
   messages: ChatMessage[] = [
-    { sender: 'bot', text: 'Welcom to DocNow! 👋', timestamp: new Date() }
+    { sender: 'bot', text: 'Welcome to DocNow! 👋 How can I help you today?', timestamp: new Date() }
   ];
   loading = false;
   documents: any[] = [];
 
   // ===== PRIVATE PROPERTIES =====
   private pageContext: string | null = window.location.pathname;
+  private previousPageContext: string | null = null;
   private accessToken: string | null = null;
   private isInitialized = false;
   private closeTimeout?: number;
@@ -56,16 +57,38 @@ export class ChatbotComponent implements OnDestroy {
     window.addEventListener('message', (event) => {
       if (event.origin === environment.parentOrigin && event.data) {
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
-          this.pageContext = event.data.page_context;
+          const newPageContext = event.data.page_context;
+          let processedPageContext = newPageContext;
 
-          if (this.pageContext) {
-            this.pageContext = this.pageContext?.slice(1, this.pageContext.length);
+          if (processedPageContext) {
+            processedPageContext = processedPageContext?.slice(1, processedPageContext.length);
           }
 
-          // Search documents only once when page context is first received
-          if (!this.hasSearchedDocuments && this.pageContext) {
-            this.hasSearchedDocuments = true;
-            this.searchDocumentsInBackground();
+          // Check if page context has changed
+          if (this.pageContext !== processedPageContext) {
+            Logger.log('Page context changed', { from: this.pageContext, to: processedPageContext });
+            
+            // Store the previous context and update to new context
+            this.previousPageContext = this.pageContext;
+            this.pageContext = processedPageContext;
+            
+            // Reset chatbot state for new page context
+            this.resetChatbotState();
+            
+            // Re-run document search with new context
+            this.hasSearchedDocuments = false;
+            if (this.pageContext) {
+              this.searchDocumentsInBackground();
+            }
+          } else {
+            // Same page context, just update if needed
+            this.pageContext = processedPageContext;
+            
+            // Search documents only once when page context is first received
+            if (!this.hasSearchedDocuments && this.pageContext) {
+              this.hasSearchedDocuments = true;
+              this.searchDocumentsInBackground();
+            }
           }
         }
 
@@ -214,7 +237,16 @@ export class ChatbotComponent implements OnDestroy {
       const loadingMessageIndex = this.addLoadingMessage();
 
       // Convert page context to keywords array
-      const keywords = this.pageContext ? [this.pageContext] : [];
+      let keywords: string[] = [];
+      if (this.pageContext) {
+        // If page context contains '/', split it into an array of keywords
+        if (this.pageContext.includes('/')) {
+          keywords = this.pageContext.split('/').filter(keyword => keyword.trim() !== '');
+        } else {
+          // If no '/' found, use the entire page context as a single keyword
+          keywords = [this.pageContext];
+        }
+      }
 
       const documentsResponse = await firstValueFrom(this.chatbotService.searchDocumentsByKeywords(keywords, this.accessToken));
 
@@ -270,9 +302,10 @@ export class ChatbotComponent implements OnDestroy {
   }
 
   private addDocumentsMessage(documentsData: any): void {
-    let messageText = '📄 **Documents Found:**\n\n';
+    let messageText = '';
 
     if (Array.isArray(documentsData) && documentsData.length > 0) {
+      messageText = '📄 **Documents Found:**\n\n';
       documentsData.forEach((doc: any, index: number) => {
         messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
         if (doc.description) {
@@ -290,6 +323,7 @@ export class ChatbotComponent implements OnDestroy {
       // Handle case where response has a documents property
       const docs = documentsData.documents;
       if (Array.isArray(docs) && docs.length > 0) {
+        messageText = '📄 **Documents Found:**\n\n';
         docs.forEach((doc: any, index: number) => {
           messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
           if (doc.description) {
@@ -303,9 +337,11 @@ export class ChatbotComponent implements OnDestroy {
           }
           messageText += '\n';
         });
+      } else {
+        messageText = '📄 No documents found.';
       }
     } else {
-      messageText = '📄 No documents found for the current context.';
+      messageText = '📄 No documents found.';
     }
 
     // Add the message to the chat
@@ -319,5 +355,27 @@ export class ChatbotComponent implements OnDestroy {
   // ===== UTILITY METHODS =====
   getPageContext(): string | null {
     return this.pageContext;
+  }
+
+  private resetChatbotState(): void {
+    // Reset chat messages to initial state
+    this.messages = [
+      { sender: 'bot', text: 'Welcome to DocNow! 👋 How can I help you today?', timestamp: new Date() }
+    ];
+    
+    // Reset loading state and clear documents
+    this.loading = false;
+    this.documents = [];
+    
+    // Reset search flag to allow new search
+    this.hasSearchedDocuments = false;
+    
+    // Reset initialization flag to re-validate with new context
+    this.isInitialized = false;
+    
+    // Clear any pending input
+    this.input = '';
+    
+    Logger.log('Chatbot state reset for new page context');
   }
 }
