@@ -68,14 +68,14 @@ export class ChatbotComponent implements OnDestroy {
           // Check if page context has changed
           if (this.pageContext !== processedPageContext) {
             Logger.log('Page context changed', { from: this.pageContext, to: processedPageContext });
-            
+
             // Store the previous context and update to new context
             this.previousPageContext = this.pageContext;
             this.pageContext = processedPageContext;
-            
+
             // Reset chatbot state for new page context
             this.resetChatbotState();
-            
+
             // Re-run document search with new context
             this.hasSearchedDocuments = false;
             if (this.pageContext && !this.isSearching) {
@@ -85,7 +85,7 @@ export class ChatbotComponent implements OnDestroy {
           } else {
             // Same page context, just update if needed
             this.pageContext = processedPageContext;
-            
+
             // Search documents only once when page context is first received
             if (!this.hasSearchedDocuments && this.pageContext && !this.isSearching) {
               this.hasSearchedDocuments = true;
@@ -334,7 +334,7 @@ export class ChatbotComponent implements OnDestroy {
       // Handle case where response has a documents property
       const docs = documentsData.documents;
       if (Array.isArray(docs) && docs.length > 0) {
-        messageText = '📄 **Documents Found:**\n\n';
+        messageText = `📄 **Resources for ${this.pageContext}:**\n\n`;
         docs.forEach((doc: any, index: number) => {
           messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
           if (doc.description) {
@@ -349,10 +349,10 @@ export class ChatbotComponent implements OnDestroy {
           messageText += '\n';
         });
       } else {
-        messageText = '📄 No documents found.';
+        messageText = '📄 No related resources found';
       }
     } else {
-      messageText = '📄 No documents found.';
+      messageText = '📄 No related resources found';
     }
 
     // Add the message to the chat
@@ -373,23 +373,23 @@ export class ChatbotComponent implements OnDestroy {
     this.messages = [
       { sender: 'bot', text: 'Welcome to DocNow! 👋 How can I help you today?', timestamp: new Date() }
     ];
-    
+
     // Reset loading state and clear documents
     this.loading = false;
     this.documents = [];
-    
+
     // Reset search flag to allow new search
     this.hasSearchedDocuments = false;
-    
+
     // Reset initialization flag to re-validate with new context
     this.isInitialized = false;
-    
+
     // Clear any pending input
     this.input = '';
-    
+
     // Reset searching flag
     this.isSearching = false;
-    
+
     Logger.log('Chatbot state reset for new page context');
   }
 }
