@@ -36,7 +36,7 @@ export class ChatbotComponent implements OnDestroy {
   isClosing = false;
   input = '';
   messages: ChatMessage[] = [
-    { sender: 'bot', text: 'Hey DocNow!👋', timestamp: new Date() }
+    { sender: 'bot', text: 'Welcom to DocNow! 👋', timestamp: new Date() }
   ];
   loading = false;
   documents: any[] = [];
@@ -47,6 +47,7 @@ export class ChatbotComponent implements OnDestroy {
   private isInitialized = false;
   private closeTimeout?: number;
   private isHovered = false;
+  private hasSearchedDocuments = false;
 
   // ===== CONSTRUCTOR & INITIALIZATION =====
   constructor(private chatbotService: ChatbotService) {
@@ -60,8 +61,11 @@ export class ChatbotComponent implements OnDestroy {
             this.pageContext = this.pageContext?.slice(1, this.pageContext.length);
           }
 
-          // Search documents when page context is received
-          this.searchDocumentsInBackground();
+          // Search documents only once when page context is first received
+          if (!this.hasSearchedDocuments && this.pageContext) {
+            this.hasSearchedDocuments = true;
+            this.searchDocumentsInBackground();
+          }
         }
 
         if (event.data.type === 'ACCESS_TOKEN' && event.data.accessToken) {
@@ -96,9 +100,14 @@ export class ChatbotComponent implements OnDestroy {
     if (!this.showChat && !this.isClosing) {
       this.showChat = true;
       this.isClosing = false;
-      this.messages = [
-        { sender: 'bot', text: 'Hey DocNow!👋 How can I help you today?', timestamp: new Date() }
-      ];
+
+      // Only initialize messages if this is the first time opening (messages array is empty)
+      if (this.messages.length === 0) {
+        this.messages = [
+          { sender: 'bot', text: 'Hey DocNow! 👋 How can I help you today?', timestamp: new Date() }
+        ];
+      }
+
       this.validateInBackground();
       this.notifyParentState();
     } else if (this.showChat && !this.isClosing) {
@@ -200,46 +209,76 @@ export class ChatbotComponent implements OnDestroy {
     try {
       Logger.log('Searching documents in background...');
 
+      // Add loading message
+      const loadingMessageIndex = this.addLoadingMessage();
+
       // Convert page context to keywords array
       const keywords = this.pageContext ? [this.pageContext] : [];
-      
+
       const documentsResponse = await firstValueFrom(this.chatbotService.searchDocumentsByKeywords(keywords, this.accessToken));
-      
+
+      // Remove loading message
+      this.removeLoadingMessage(loadingMessageIndex);
+
       if (documentsResponse) {
         Logger.log('Documents search completed successfully:', documentsResponse);
-        
+
         // Store the documents
         this.documents = documentsResponse;
-        
+
         // Add a message to the chat with the documents data
         this.addDocumentsMessage(documentsResponse);
       }
     } catch (error) {
       Logger.error('Failed to search documents:', error);
+      // Remove loading message on error too
+      this.removeLoadingMessage();
     }
   }
 
     private handleError(error: any): void {
     this.loading = false;
-    this.messages.push({ 
-      sender: 'bot', 
+    this.messages.push({
+      sender: 'bot',
       text: 'Sorry, something went wrong. Please try again.',
       timestamp: new Date()
     });
     Logger.error('Chatbot Error:', error);
   }
 
+  private addLoadingMessage(): number {
+    const loadingMessage = {
+      sender: 'bot' as const,
+      text: 'Loading resources...',
+      timestamp: new Date(),
+      isLoading: true
+    };
+
+    this.messages.push(loadingMessage);
+    return this.messages.length - 1; // Return the index of the loading message
+  }
+
+  private removeLoadingMessage(loadingMessageIndex?: number): void {
+    if (loadingMessageIndex !== undefined && loadingMessageIndex >= 0 && loadingMessageIndex < this.messages.length) {
+      // Remove the specific loading message by index
+      this.messages.splice(loadingMessageIndex, 1);
+    } else {
+      // Remove any loading message if index not provided
+      this.messages = this.messages.filter(message => !(message as any).isLoading);
+    }
+  }
+
   private addDocumentsMessage(documentsData: any): void {
     let messageText = '📄 **Documents Found:**\n\n';
-    
+
     if (Array.isArray(documentsData) && documentsData.length > 0) {
       documentsData.forEach((doc: any, index: number) => {
         messageText += `**${index + 1}. ${doc.title || doc.name || 'Untitled Document'}**\n`;
         if (doc.description) {
           messageText += `${doc.description}\n`;
         }
-        if (doc.url) {
-          messageText += `🔗 [View Document](${doc.url})\n`;
+        if (doc.link) {
+          messageText += `🔗 [View Document](${doc.link})\n`;
         }
         if (doc.tags && Array.isArray(doc.tags)) {
           messageText += `🏷️ Tags: ${doc.tags.join(', ')}\n`;
@@ -255,8 +294,8 @@ export class ChatbotComponent implements OnDestroy {
           if (doc.description) {
             messageText += `${doc.description}\n`;
           }
-          if (doc.url) {
-            messageText += `🔗 [View Document](${doc.url})\n`;
+          if (doc.link) {
+            messageText += `🔗 [View Document](${doc.link})\n`;
           }
           if (doc.tags && Array.isArray(doc.tags)) {
             messageText += `🏷️ Tags: ${doc.tags.join(', ')}\n`;
