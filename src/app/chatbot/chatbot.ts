@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { ChatbotService } from './chatbotservice';
 import { environment } from '../../environments/environment';
 import { Logger } from '../utils/logger';
+import { MarkdownRendererComponent } from '../markdown-renderer/markdown-renderer.component';
 
 // ===== INTERFACES =====
 interface ChatMessage {
@@ -26,7 +27,7 @@ interface BotResponse {
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MarkdownRendererComponent],
   templateUrl: './chatbot.html',
   styleUrls: ['./chatbot.scss']
 })
@@ -273,7 +274,7 @@ export class ChatbotComponent implements OnDestroy {
 
     if (Array.isArray(documentsData) && documentsData.length > 0) {
       documentsData.forEach((doc: any, index: number) => {
-        messageText += `**${index + 1}. ${doc.title || doc.name || 'Untitled Document'}**\n`;
+        messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
         if (doc.description) {
           messageText += `${doc.description}\n`;
         }
@@ -290,7 +291,7 @@ export class ChatbotComponent implements OnDestroy {
       const docs = documentsData.documents;
       if (Array.isArray(docs) && docs.length > 0) {
         docs.forEach((doc: any, index: number) => {
-          messageText += `**${index + 1}. ${doc.title || doc.name || 'Untitled Document'}**\n`;
+          messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
           if (doc.description) {
             messageText += `${doc.description}\n`;
           }

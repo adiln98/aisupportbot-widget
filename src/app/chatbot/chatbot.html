@@ -29,10 +29,10 @@
     <div class="chatbot-body">
       <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
         <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
-          <span class="message-text" [innerHTML]="msg.text"></span>
+          <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
         </div>
         <div *ngIf="msg.sender === 'user'" class="message-user-content">
-          <span class="message-text">{{ msg.text }}</span>
+          <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
         </div>
       </div>
 
