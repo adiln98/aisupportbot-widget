@@ -402,3 +402,86 @@
     color: white;
   }
 }
+
+// Document list styles
+.documents-list {
+  margin-top: 12px;
+}
+
+.document-item {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.document-info {
+  strong {
+    color: #212529;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  
+  p {
+    color: #6c757d;
+    font-size: 13px;
+    margin: 6px 0;
+  }
+}
+
+.document-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.document-link {
+  color: rgb(59, 130, 246);
+  text-decoration: none;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.summarize-btn {
+  background-color: rgb(59, 130, 246);
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  &:hover {
+    background-color: rgb(37, 99, 235);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.document-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.tag {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}

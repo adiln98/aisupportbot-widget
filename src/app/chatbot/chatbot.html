@@ -30,6 +30,24 @@
       <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
         <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
           <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
+          <!-- Documents with Summarize buttons -->
+          <div *ngIf="msg.documents && msg.documents.length > 0" class="documents-list">
+            <div *ngFor="let doc of msg.documents; let i = index" class="document-item">
+              <div class="document-info">
+                <strong>{{ i + 1 }}. {{ doc.filename || doc.name || 'Untitled Document' }}</strong>
+                <p *ngIf="doc.description">{{ doc.description }}</p>
+                <div class="document-actions">
+                  <a *ngIf="doc.link" [href]="doc.link" target="_blank" class="document-link">📖 View Document</a>
+                  <button class="summarize-btn" (click)="summarizeDocument(doc.filename || doc.name || 'Untitled Document')">
+                    Summarize Resource
+                  </button>
+                </div>
+                <div *ngIf="doc.tags && doc.tags.length > 0" class="document-tags">
+                  <span class="tag" *ngFor="let tag of doc.tags">{{ tag }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div *ngIf="msg.sender === 'user'" class="message-user-content">
           <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>

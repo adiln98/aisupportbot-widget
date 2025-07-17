@@ -13,6 +13,7 @@ interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
   timestamp?: Date;
+  documents?: any[];
 }
 
 interface BotResponse {
@@ -182,6 +183,35 @@ export class ChatbotComponent implements OnDestroy {
     });
   }
 
+  summarizeDocument(filename: string): void {
+    const summarizeMsg = `Summarize the content of the document ${filename}`;
+    
+    this.messages.push({
+      sender: 'user',
+      text: summarizeMsg,
+      timestamp: new Date()
+    });
+    this.loading = true;
+
+    Logger.log('Requesting document summary:', filename);
+
+    this.chatbotService.queryBot(summarizeMsg, this.getPageContext(), this.accessToken).subscribe({
+      next: (response: BotResponse) => {
+        this.messages.push({
+          sender: 'bot',
+          text: response.answer,
+          timestamp: new Date()
+        });
+        Logger.log('Summary Response', response);
+        this.loading = false;
+      },
+      error: (error: any) => {
+        this.handleError(error);
+        Logger.error('Error summarizing document:', error);
+      }
+    });
+  }
+
   // ===== PRIVATE METHODS =====
   // Notify parent page of widget state (TypeScript → JavaScript)
   private notifyParentState(): void {
@@ -314,40 +344,17 @@ export class ChatbotComponent implements OnDestroy {
 
   private addDocumentsMessage(documentsData: any): void {
     let messageText = '';
+    let documents: any[] = [];
 
     if (Array.isArray(documentsData) && documentsData.length > 0) {
-      messageText = '📄 **Documents Found:**\n\n';
-      documentsData.forEach((doc: any, index: number) => {
-        messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
-        if (doc.description) {
-          messageText += `${doc.description}\n`;
-        }
-        if (doc.link) {
-          messageText += `🔗 [View Document](${doc.link})\n`;
-        }
-        if (doc.tags && Array.isArray(doc.tags)) {
-          messageText += `🏷️ Tags: ${doc.tags.join(', ')}\n`;
-        }
-        messageText += '\n';
-      });
+      messageText = '📄 **Documents Found:**';
+      documents = documentsData;
     } else if (typeof documentsData === 'object' && documentsData.documents) {
       // Handle case where response has a documents property
       const docs = documentsData.documents;
       if (Array.isArray(docs) && docs.length > 0) {
-        messageText = `📄 **Resources for ${this.pageContext}:**\n\n`;
-        docs.forEach((doc: any, index: number) => {
-          messageText += `**${index + 1}. ${doc.filename || doc.name || 'Untitled Document'}**\n`;
-          if (doc.description) {
-            messageText += `${doc.description}\n`;
-          }
-          if (doc.link) {
-            messageText += `🔗 [View Document](${doc.link})\n`;
-          }
-          if (doc.tags && Array.isArray(doc.tags)) {
-            messageText += `🏷️ Tags: ${doc.tags.join(', ')}\n`;
-          }
-          messageText += '\n';
-        });
+        messageText = `📄 **Resources for ${this.pageContext}:**`;
+        documents = docs;
       } else {
         messageText = '📄 No related resources found';
       }
@@ -355,11 +362,12 @@ export class ChatbotComponent implements OnDestroy {
       messageText = '📄 No related resources found';
     }
 
-    // Add the message to the chat
+    // Add the message to the chat with documents array
     this.messages.push({
       sender: 'bot',
       text: messageText,
-      timestamp: new Date()
+      timestamp: new Date(),
+      documents: documents
     });
   }
 

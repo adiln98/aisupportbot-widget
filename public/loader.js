@@ -97,8 +97,8 @@
             const { isOpen, isHovered } = event.data;
             
             if (isOpen) {
-                // Widget is open - expand iframe for popup (doubled size)
-                resizeIframe(700, 900);
+                // Widget is open - expand iframe for popup
+                resizeIframe(440, 550);
             } else if (isHovered) {
                 // Widget is hovered - expand iframe for button hover
                 resizeIframe(200, 68);
