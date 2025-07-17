@@ -105,8 +105,8 @@
 }
 
 .chatbot-popup {
-  width: 320px;
-  height: 400px;
+  width: 440px;
+  height: 550px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
@@ -347,24 +347,24 @@
   p { margin: 0 0 0.75em 0; &:last-child { margin-bottom: 0; } }
   h1, h2, h3, h4, h5, h6 { font-weight: 600; margin: 1em 0 0.5em 0; &:first-child { margin-top: 0; } }
   ul, ol { margin: 0 0 0.75em 0; padding-left: 1.5em; &:last-child { margin-bottom: 0; } }
-  
+
   code {
     padding: 0.125em 0.25em;
     border-radius: 3px;
     font-family: monospace;
     font-size: 0.9em;
   }
-  
+
   pre {
     padding: 0.75em;
     border-radius: 6px;
     overflow-x: auto;
     margin: 0 0 0.75em 0;
     &:last-child { margin-bottom: 0; }
-    
+
     code { background-color: transparent; padding: 0; font-size: 0.875em; }
   }
-  
+
   a { text-decoration: none; &:hover { text-decoration: underline; } }
   strong { font-weight: 600; }
   em { font-style: italic; }
@@ -372,16 +372,16 @@
 
 .message-bot-content ::ng-deep .markdown-content {
   color: #212529;
-  
+
   code {
     background-color: #f8f9fa;
     color: #d63384;
   }
-  
+
   pre {
     background-color: #f8f9fa;
   }
-  
+
   a {
     color: rgb(59, 130, 246);
   }
@@ -389,15 +389,15 @@
 
 .message-user-content ::ng-deep .markdown-content {
   color: white;
-  
+
   code {
     background-color: rgba(255, 255, 255, 0.2);
   }
-  
+
   pre {
     background-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   a {
     color: white;
   }
