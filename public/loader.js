@@ -24,10 +24,10 @@
     iframe.src = WIDGET_URL;
     iframe.style.cssText = `
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 68px;
-        height: 68px;
+        bottom: 0;
+        right: 0;
+        width: 88px;
+        height: 88px;
         border: none;
         z-index: 1000;
         background: transparent;
@@ -98,13 +98,14 @@
             
             if (isOpen) {
                 // Widget is open - expand iframe for popup
-                resizeIframe(440, 550);
+                // Add extra padding to account for positioning
+                resizeIframe(480, 590);
             } else if (isHovered) {
                 // Widget is hovered - expand iframe for button hover
-                resizeIframe(200, 68);
+                resizeIframe(220, 88);
             } else {
                 // Widget is closed - shrink iframe for button only
-                resizeIframe(68, 68);
+                resizeIframe(88, 88);
             }
         }
     });
