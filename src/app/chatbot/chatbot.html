@@ -25,55 +25,72 @@
       <button class="close-btn" (click)="toggleChat()">✖</button>
     </div>
 
-    <!-- Messages -->
+    <!-- Messages and Documents -->
     <div class="chatbot-body">
-      <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
-        <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
-          <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
-          <!-- Documents with Summarize buttons -->
-          <div *ngIf="msg.documents && msg.documents.length > 0" class="documents-list">
-            <div *ngFor="let doc of msg.documents; let i = index" class="document-item">
-              <div class="document-info">
-                <strong>{{ i + 1 }}. {{ doc.filename || doc.name || 'Untitled Document' }}</strong>
-                <p *ngIf="doc.description">{{ doc.description }}</p>
-                <div class="document-actions">
-                  <a *ngIf="doc.link" [href]="doc.link" target="_blank" class="document-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                      <polyline points="15,3 21,3 21,9"></polyline>
-                      <line x1="10" y1="14" x2="21" y2="3"></line>
-                    </svg>
-                    View Document
-                  </a>
-                  <button class="summarize-btn" (click)="summarizeDocument(doc.filename || doc.name || 'Untitled Document')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14,2 14,8 20,8"></polyline>
-                      <line x1="16" y1="13" x2="8" y2="13"></line>
-                      <line x1="16" y1="17" x2="8" y2="17"></line>
-                      <polyline points="10,9 9,9 8,9"></polyline>
-                    </svg>
-                    Summarize Resource
-                  </button>
-                </div>
-                <div *ngIf="doc.tags && doc.tags.length > 0" class="document-tags">
-                  <span class="tag" *ngFor="let tag of doc.tags">{{ tag }}</span>
-                </div>
+      <!-- Documents Section (shown separately from messages) -->
+      <div *ngIf="documents && documents.length > 0" class="documents-section">
+        <div class="documents-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14,2 14,8 20,8"></polyline>
+          </svg>
+          <span>Resources for this page</span>
+        </div>
+        <div class="documents-grid">
+          <div *ngFor="let doc of documents; let i = index" class="document-card">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14,2 14,8 20,8"></polyline>
+                </svg>
               </div>
+              <h3 class="card-title">{{ doc.filename || doc.name || 'Untitled Document' }}</h3>
+            </div>
+            <div class="card-body">
+              <p class="card-description" *ngIf="doc.description">{{ doc.description }}</p>
+              <div class="card-tags" *ngIf="doc.tags && doc.tags.length > 0">
+                <span class="tag" *ngFor="let tag of doc.tags">{{ tag }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <a *ngIf="doc.link" [href]="doc.link" target="_blank" class="card-action-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15,3 21,3 21,9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                <span>View</span>
+              </a>
+              <button class="card-action-btn" (click)="summarizeDocument(doc.filename || doc.name || 'Untitled Document')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 11H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h5m0-9v9m0-9l2.5-2.5M9 11l2.5 2.5M13 6.5L15.5 9m0 0L18 6.5M15.5 9V1"></path>
+                </svg>
+                <span>Summarize</span>
+              </button>
             </div>
           </div>
         </div>
-        <div *ngIf="msg.sender === 'user'" class="message-user-content">
-          <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
-        </div>
       </div>
 
-      <!-- Loading Indicator -->
-      <div *ngIf="loading" class="message-bot loading-msg">
-        <div class="typing-indicator">
-          <span></span>
-          <span></span>
-          <span></span>
+      <!-- Messages -->
+      <div class="messages-container">
+        <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
+          <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
+            <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
+          </div>
+          <div *ngIf="msg.sender === 'user'" class="message-user-content">
+            <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
+          </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div *ngIf="loading" class="message-bot loading-msg">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
     </div>

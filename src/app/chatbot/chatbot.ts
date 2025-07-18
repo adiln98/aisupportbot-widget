@@ -272,9 +272,6 @@ export class ChatbotComponent implements OnDestroy {
     try {
       Logger.log('Searching documents in background...');
 
-      // Add loading message
-      const loadingMessageIndex = this.addLoadingMessage();
-
       // Convert page context to keywords array
       let keywords: string[] = [];
       if (this.pageContext) {
@@ -289,22 +286,14 @@ export class ChatbotComponent implements OnDestroy {
 
       const documentsResponse = await firstValueFrom(this.chatbotService.searchDocumentsByKeywords(keywords, this.accessToken));
 
-      // Remove loading message
-      this.removeLoadingMessage(loadingMessageIndex);
-
       if (documentsResponse) {
         Logger.log('Documents search completed successfully:', documentsResponse);
 
-        // Store the documents
-        this.documents = documentsResponse;
-
-        // Add a message to the chat with the documents data
+        // Update the documents data
         this.addDocumentsMessage(documentsResponse);
       }
     } catch (error) {
       Logger.error('Failed to search documents:', error);
-      // Remove loading message on error too
-      this.removeLoadingMessage();
     } finally {
       this.isSearching = false;
     }
@@ -320,63 +309,24 @@ export class ChatbotComponent implements OnDestroy {
     Logger.error('Chatbot Error:', error);
   }
 
-  private addLoadingMessage(): number {
-    const loadingMessage = {
-      sender: 'bot' as const,
-      text: 'Loading resources...',
-      timestamp: new Date(),
-      isLoading: true
-    };
-
-    this.messages.push(loadingMessage);
-    return this.messages.length - 1; // Return the index of the loading message
-  }
-
-  private removeLoadingMessage(loadingMessageIndex?: number): void {
-    if (loadingMessageIndex !== undefined && loadingMessageIndex >= 0 && loadingMessageIndex < this.messages.length) {
-      // Remove the specific loading message by index
-      this.messages.splice(loadingMessageIndex, 1);
-    } else {
-      // Remove any loading message if index not provided
-      this.messages = this.messages.filter(message => !(message as any).isLoading);
-    }
-  }
 
   private addDocumentsMessage(documentsData: any): void {
-    let messageText = '';
-    let documents: any[] = [];
-
-    // Add the message to the chat with documents array
-    this.messages.push({
-      sender: 'bot',
-      text: `📄 **Resources for ${this.pageContext}:**`,
-      timestamp: new Date(),
-      documents: documents
-    });
-
+    // Instead of adding to messages, just update the documents array
     if (Array.isArray(documentsData) && documentsData.length > 0) {
-      messageText = '📄 **Documents Found:**';
-      documents = documentsData;
+      this.documents = documentsData;
     } else if (typeof documentsData === 'object' && documentsData.documents) {
       // Handle case where response has a documents property
       const docs = documentsData.documents;
       if (Array.isArray(docs) && docs.length > 0) {
-        // messageText = `📄 **Resources for ${this.pageContext}:**`;
-        documents = docs;
+        this.documents = docs;
       } else {
-        messageText = '📄 No related resources found';
+        this.documents = [];
       }
     } else {
-      messageText = '📄 No related resources found';
+      this.documents = [];
     }
-
-    // Add the message to the chat with documents array
-    this.messages.push({
-      sender: 'bot',
-      text: messageText,
-      timestamp: new Date(),
-      documents: documents
-    });
+    
+    Logger.log('Documents updated:', this.documents.length);
   }
 
   // ===== UTILITY METHODS =====
