@@ -346,6 +346,14 @@ export class ChatbotComponent implements OnDestroy {
     let messageText = '';
     let documents: any[] = [];
 
+    // Add the message to the chat with documents array
+    this.messages.push({
+      sender: 'bot',
+      text: `📄 **Resources for ${this.pageContext}:**`,
+      timestamp: new Date(),
+      documents: documents
+    });
+
     if (Array.isArray(documentsData) && documentsData.length > 0) {
       messageText = '📄 **Documents Found:**';
       documents = documentsData;
@@ -353,7 +361,7 @@ export class ChatbotComponent implements OnDestroy {
       // Handle case where response has a documents property
       const docs = documentsData.documents;
       if (Array.isArray(docs) && docs.length > 0) {
-        messageText = `📄 **Resources for ${this.pageContext}:**`;
+        // messageText = `📄 **Resources for ${this.pageContext}:**`;
         documents = docs;
       } else {
         messageText = '📄 No related resources found';
