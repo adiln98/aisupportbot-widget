@@ -42,6 +42,7 @@ export class ChatbotComponent implements OnDestroy {
   ];
   loading = false;
   documents: any[] = [];
+  documentsLoading = false;
 
   // ===== PRIVATE PROPERTIES =====
   private pageContext: string | null = window.location.pathname;
@@ -269,6 +270,7 @@ export class ChatbotComponent implements OnDestroy {
     }
 
     this.isSearching = true;
+    this.documentsLoading = true;
     try {
       Logger.log('Searching documents in background...');
 
@@ -294,8 +296,10 @@ export class ChatbotComponent implements OnDestroy {
       }
     } catch (error) {
       Logger.error('Failed to search documents:', error);
+      this.documents = [];
     } finally {
       this.isSearching = false;
+      this.documentsLoading = false;
     }
   }
 
@@ -343,6 +347,7 @@ export class ChatbotComponent implements OnDestroy {
     // Reset loading state and clear documents
     this.loading = false;
     this.documents = [];
+    this.documentsLoading = false;
 
     // Reset search flag to allow new search
     this.hasSearchedDocuments = false;
