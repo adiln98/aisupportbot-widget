@@ -6,7 +6,7 @@
   <button *ngIf="!showChat" class="chatbot-button" (click)="toggleChat()" (mouseenter)="onButtonMouseEnter()" (mouseleave)="onButtonMouseLeave()">
     <!-- Initial logo (centered) -->
     <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-initial" />
-    
+
     <!-- Hover content (logo + text) -->
     <div class="button-content">
       <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-hover" />
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Messages and Documents -->
-    <div class="chatbot-body">
+    <div class="chatbot-body" #chatbotBody>
       <!-- Documents Section (shown separately from messages) -->
       <div *ngIf="documents && documents.length > 0" class="documents-section">
         <div class="documents-header">
@@ -63,9 +63,6 @@
                 <span>View</span>
               </a>
               <button class="card-action-btn" (click)="summarizeDocument(doc.filename || doc.name || 'Untitled Document')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 11H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h5m0-9v9m0-9l2.5-2.5M9 11l2.5 2.5M13 6.5L15.5 9m0 0L18 6.5M15.5 9V1"></path>
-                </svg>
                 <span>Summarize</span>
               </button>
             </div>
@@ -97,13 +94,13 @@
 
     <!-- Input -->
     <div class="chatbot-footer">
-      <input 
-        [(ngModel)]="input" 
-        (keyup.enter)="sendMessage()" 
-        placeholder="Ask something..." 
+      <input
+        [(ngModel)]="input"
+        (keyup.enter)="sendMessage()"
+        placeholder="Ask something..."
       />
-      <button 
-        (click)="sendMessage()" 
+      <button
+        (click)="sendMessage()"
       >
         Send
       </button>

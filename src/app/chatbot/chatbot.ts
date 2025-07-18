@@ -1,5 +1,5 @@
 // component chatbot.ts
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -33,6 +33,9 @@ interface BotResponse {
   styleUrls: ['./chatbot.scss']
 })
 export class ChatbotComponent implements OnDestroy {
+  // ===== VIEW CHILD REFERENCES =====
+  @ViewChild('chatbotBody', { static: false }) chatbotBody!: ElementRef;
+
   // ===== PUBLIC PROPERTIES =====
   showChat = false;
   isClosing = false;
@@ -160,6 +163,9 @@ export class ChatbotComponent implements OnDestroy {
     this.input = '';
     this.loading = true;
 
+    // Scroll to bottom after adding user message
+    this.scrollToBottom();
+
     Logger.log('Using access token:', this.accessToken ? 'Token available' : 'No token');
 
     this.chatbotService.queryBot(userMsg, this.getPageContext(), this.accessToken).subscribe({
@@ -171,6 +177,8 @@ export class ChatbotComponent implements OnDestroy {
         });
         Logger.log('Chatbot Response', response);
         this.loading = false;
+        // Scroll to bottom after adding bot response
+        this.scrollToBottom();
       },
       error: (error: any) => {
         this.handleError(error);
@@ -193,6 +201,9 @@ export class ChatbotComponent implements OnDestroy {
     });
     this.loading = true;
 
+    // Scroll to bottom after adding user message
+    this.scrollToBottom();
+
     Logger.log('Requesting document summary:', filename);
 
     this.chatbotService.queryBot(summarizeMsg, this.getPageContext(), this.accessToken).subscribe({
@@ -204,12 +215,40 @@ export class ChatbotComponent implements OnDestroy {
         });
         Logger.log('Summary Response', response);
         this.loading = false;
+        // Scroll to bottom after adding bot response
+        this.scrollToBottom();
       },
       error: (error: any) => {
         this.handleError(error);
         Logger.error('Error summarizing document:', error);
       }
     });
+  }
+
+  private scrollToBottom(): void {
+    try {
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(() => {
+        if (this.chatbotBody) {
+          const element = this.chatbotBody.nativeElement;
+          
+          // Method 1: Direct scroll to bottom
+          element.scrollTop = element.scrollHeight;
+          
+          // Method 2: Find the last message and scroll to it
+          const lastMessage = element.querySelector('.message-user:last-child, .message-bot:last-child, .loading-msg:last-child');
+          if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }
+          
+          Logger.log(`Scrolled to bottom - scrollTop: ${element.scrollTop}, scrollHeight: ${element.scrollHeight}`);
+        } else {
+          Logger.warn('ChatbotBody element not found for scrolling');
+        }
+      }, 100);
+    } catch (error) {
+      Logger.error('Error scrolling to bottom:', error);
+    }
   }
 
   // ===== PRIVATE METHODS =====
@@ -307,6 +346,8 @@ export class ChatbotComponent implements OnDestroy {
       timestamp: new Date()
     });
     Logger.error('Chatbot Error:', error);
+    // Scroll to bottom after adding error message
+    this.scrollToBottom();
   }
 
 
