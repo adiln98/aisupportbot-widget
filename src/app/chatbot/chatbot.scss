@@ -109,8 +109,8 @@
 }
 
 .chatbot-popup {
-  width: 440px;
-  height: 550px;
+  width: 600px;
+  height: 750px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
@@ -430,7 +430,7 @@
     display: block;
     margin-bottom: 6px;
   }
-  
+
   p {
     color: #6c757d;
     font-size: 13px;
@@ -451,7 +451,7 @@
   font-size: 13px;
   display: inline-flex;
   align-items: center;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -468,11 +468,11 @@
   font-weight: 500;
   transition: background-color 0.2s ease;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  
+
   &:hover {
     background-color: rgb(37, 99, 235);
   }
-  
+
   &:active {
     transform: translateY(1px);
   }
@@ -494,18 +494,18 @@
 }
 
 // Responsive adjustments
-@media (max-width: 520px) {
+@media (max-width: 680px) {
   .chatbot-popup {
     width: calc(100vw - 40px);
     height: calc(100vh - 100px);
-    max-width: 440px;
-    max-height: 550px;
+    max-width: 600px;
+    max-height: 750px;
   }
 }
 
-@media (max-height: 650px) {
+@media (max-height: 850px) {
   .chatbot-popup {
     height: calc(100vh - 80px);
-    max-height: 550px;
+    max-height: 750px;
   }
 }

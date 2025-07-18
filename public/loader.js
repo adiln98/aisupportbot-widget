@@ -99,7 +99,7 @@
             if (isOpen) {
                 // Widget is open - expand iframe for popup
                 // Add extra padding to account for positioning
-                resizeIframe(480, 590);
+                resizeIframe(640, 790);
             } else if (isHovered) {
                 // Widget is hovered - expand iframe for button hover
                 resizeIframe(220, 88);
