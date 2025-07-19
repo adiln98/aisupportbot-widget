@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "cross-env NG_CLI_ANALYTICS=false ng serve",
-    "build": "ng build",
+    "start": "node scripts/replace-urls.js development && cross-env NG_CLI_ANALYTICS=false ng serve",
+    "build": "node scripts/replace-urls.js development && ng build",
+    "build:prod": "node scripts/replace-urls.js production && ng build --configuration=production",
     "watch": "ng build --watch --configuration development"
   },
   "prettier": {

@@ -1,153 +1,54 @@
 # Chatbot Widget
 
-A simple Angular chatbot widget that can be embedded in any website. This widget communicates with a backend API and supports JWT authentication.
-
-
-## Project Structure
-
-```
-chatbot-widget/
-├── src/
-│   ├── app/chatbot/          # Main chatbot component
-│   │   ├── chatbot.ts        # Component logic
-│   │   ├── chatbot.html      # Template
-│   │   ├── chatbot.scss      # Styles
-│   │   └── chatbotservice.ts # API service
-│   ├── environments/         # Environment configuration
-│   │   ├── environment.ts    # Development
-│   │   ├── environment.prod.ts # Production
-│   │   
-│   └── assets/              # Images and static files
-```
-
-## Environment Configuration
-
-The widget uses different environment files for different deployment stages:
+## 🚀 Quick Start
 
 ### Development
-// src/environments/environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8000/api/agent/query',
-  parentOrigin: 'http://localhost:4200',
-  retryAttempts: 3,
-  timeout: 30000
-};
-```
-
-### Production
-
-// src/environments/environment.prod.ts
-export const environment = {
-  production: true,
-  apiUrl: '',
-  parentOrigin: 'https://docnow.com',
-  retryAttempts: 2,
-  timeout: 20000
-};
-```
-
-## Development
-
-### Prerequisites
-- Node.js (v18 or higher)
-- Angular CLI (`npm install -g @angular/cli`)
-
-### Installation
 ```bash
 npm install
+npm start
 ```
+**Access**: `http://localhost:3100/`
 
-### Start Development Server
+### Production
 ```bash
-ng serve or npm start
-```
-Navigate to `http://localhost:3000/` to see the widget.
-
-## Building
-
-### Development Build
-```bash
-ng build
-```
-
-### Production Build
-```bash
-ng build --configuration=production
+npm run build:prod
 npx serve dist/chatbot-widget/browser --single
 ```
 
+## ⚙️ Environment Configuration
 
-##################### Integration
+### Development (`src/environments/environment.ts`)
 
-### 1. Build the Widget
+### Production (`src/environments/environment.prod.ts`)
+
+```
+
+## 🔗 Integration
+
+### 1. Build
 ```bash
-ng build --configuration=production
+# Development
+npm run build
+
+# Production
+npm run build:prod
 ```
 
-### 2. Copy Build Files
-Copy the contents of `dist/chatbot-widget/browser/` to your web server.
-
-### 3. Include in Your Website of Parent Company Code
+### 2. Include in Website
 ```html
-<!-- Add this to your HTML -->
-<script src=""></script>
+<!-- Development -->
+<script src="http://localhost:3100/loader.js"></script>
+
+<!-- Production -->
+<script src="https://widget.doctornow.io/loader.js"></script>
 ```
 
-### 4. Send Messages to Widget
-```javascript
-// Send page context
-window.postMessage({
-  type: 'PAGE_CONTEXT',
-  page_context: 'I am on the pricing page'
-}, 'https://your-domain.com');
+## 🐛 Troubleshooting
 
-// Send access token
-window.postMessage({
-  type: 'ACCESS_TOKEN',
-  accessToken: 'your-jwt-token'
-}, 'https://your-domain.com');
-```
+- **CORS Errors**: Check API domain settings
+- **Build Errors**: Verify environment configuration
+- **URL Issues**: Ensure `loader.js` has correct URLs (not placeholders)
 
-## Configuration
+## 📄 License
 
-
-## API Communication
-
-The widget sends POST requests to the configured API endpoint with:
-
-```typescript
-{
-  query: string,
-  n_results: number,
-  conversation_id: string | null,
-  access_token: string | null,
-  page_context: string | null
-}
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **CORS Errors**: Ensure your API allows requests from the widget domain
-2. **Authentication**: Make sure JWT tokens are valid and not expired
-3. **Build Errors**: Check that all environment files are properly configured
-
-### Debug Mode
-Enable debug logging by setting `enableDebug: true` in environment files.
-
-## Customization
-
-### Styling
-Edit `src/app/chatbot/chatbot.scss` to customize the widget appearance.
-
-### Configuration
-Modify environment files to change API endpoints, timeouts, and other settings.
-
-### Features
-Add new features by extending the `ChatbotService` and `ChatbotComponent`.
-
-## License
-
-This project is part of the DocNow platform integration.
+Part of the DocNow platform integration.

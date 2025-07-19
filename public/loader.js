@@ -2,14 +2,14 @@
 (function() {
     'use strict';
     
-    // ===== CONFIGURATION - CHANGE THESE URLs FOR DIFFERENT ENVIRONMENTS =====
-    // Development URLs (ACTIVE)
+    // ===== CONFIGURATION - Environment-based URLs =====
+    // These values are automatically replaced during build
+    // Development: http://localhost:3100
+    // Production: https://widget.doctornow.io
     const WIDGET_URL = 'http://localhost:3100/browser/';
     const WIDGET_ORIGIN = 'http://localhost:3100';
     
-    // Production URLs (COMMENTED OUT)
-    // const WIDGET_URL = 'https://widget.doctornow.io/browser/';
-    // const WIDGET_ORIGIN = 'https://widget.doctornow.io';
+    console.log('[Loader] Widget URLs:', { WIDGET_URL, WIDGET_ORIGIN });
     // ===== END CONFIGURATION =====
     
     // ===== INITIALIZATION =====

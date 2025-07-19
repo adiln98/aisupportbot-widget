@@ -5,8 +5,11 @@ export const environment = {
   apiUrl: 'http://localhost:8000/api/agent/query',
   docsUrl: 'http://localhost:8000/api/documents',
   docsKeywordSearchUrl: 'http://localhost:8000/api/documents/search-by-keywords',
-  parentOrigin: 'http://localhost:4200',
+  docNowPlatformUrl: 'http://localhost:4200',
 
+  // Widget URLs
+  widgetUrl: 'http://localhost:3100/browser/',
+  widgetOrigin: 'http://localhost:3100',
 
   // Basic settings
   retryAttempts: 3,

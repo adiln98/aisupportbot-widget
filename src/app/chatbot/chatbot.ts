@@ -60,7 +60,7 @@ export class ChatbotComponent implements OnDestroy {
   constructor(private chatbotService: ChatbotService) {
     // Listen for messages from parent page (JavaScript → TypeScript)
     window.addEventListener('message', (event) => {
-      if (event.origin === environment.parentOrigin && event.data) {
+      if (event.origin === environment.docNowPlatformUrl && event.data) {
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
           const newPageContext = event.data.page_context;
           let processedPageContext = newPageContext;

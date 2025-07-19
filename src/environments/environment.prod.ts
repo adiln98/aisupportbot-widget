@@ -4,7 +4,11 @@ export const environment = {
   // API URLs
   apiUrl: 'AiSupportPlatformProductionUrl',
   docsKeywordSearchUrl: 'AiSupportPlatformProductionDocsSearchUrl',
-  parentOrigin: 'https://app.doctornow.io',
+  docNowPlatformUrl: 'DocNowPlatformProductionUrl',
+  
+  // Widget URLs
+  widgetUrl: 'https://widget.doctornow.io/browser/',
+  widgetOrigin: 'https://widget.doctornow.io',
   
   // Basic settings
   retryAttempts: 2,
