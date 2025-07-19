@@ -6,7 +6,7 @@
   <button *ngIf="!showChat" class="chatbot-button" (click)="toggleChat()" (mouseenter)="onButtonMouseEnter()" (mouseleave)="onButtonMouseLeave()">
     <!-- Initial logo (centered) -->
     <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-initial" />
-    
+
     <!-- Hover content (logo + text) -->
     <div class="button-content">
       <img src="assets/dnlogo.png" alt="DocNow" class="button-logo-hover" />
@@ -25,36 +25,82 @@
       <button class="close-btn" (click)="toggleChat()">✖</button>
     </div>
 
-    <!-- Messages -->
-    <div class="chatbot-body">
-      <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
-        <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
-          <span class="message-text" [innerHTML]="msg.text"></span>
+    <!-- Messages and Documents -->
+    <div class="chatbot-body" #chatbotBody>
+      <!-- Documents Section (shown separately from messages) -->
+      <div *ngIf="documents && documents.length > 0" class="documents-section">
+        <div class="documents-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14,2 14,8 20,8"></polyline>
+          </svg>
+          <span>Resources for this page</span>
         </div>
-        <div *ngIf="msg.sender === 'user'" class="message-user-content">
-          <span class="message-text">{{ msg.text }}</span>
+        <div class="documents-grid">
+          <div *ngFor="let doc of documents; let i = index" class="document-card">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14,2 14,8 20,8"></polyline>
+                </svg>
+              </div>
+              <h3 class="card-title">{{ doc.filename || doc.name || 'Untitled Document' }}</h3>
+            </div>
+            <div class="card-body">
+              <p class="card-description" *ngIf="doc.description">{{ doc.description }}</p>
+              <div class="card-tags" *ngIf="doc.tags && doc.tags.length > 0">
+                <span class="tag" *ngFor="let tag of doc.tags">{{ tag }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <a *ngIf="doc.link" [href]="doc.link" target="_blank" class="card-action-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15,3 21,3 21,9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                <span>View</span>
+              </a>
+              <button class="card-action-btn" (click)="summarizeDocument(doc.filename || doc.name || 'Untitled Document')">
+                <span>Summarize</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Loading Indicator -->
-      <div *ngIf="loading" class="message-bot loading-msg">
-        <div class="typing-indicator">
-          <span></span>
-          <span></span>
-          <span></span>
+      <!-- Messages -->
+      <div class="messages-container">
+        <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'user' ? 'message-user' : 'message-bot'">
+          <div *ngIf="msg.sender === 'bot'" class="message-bot-content">
+            <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
+          </div>
+          <div *ngIf="msg.sender === 'user'" class="message-user-content">
+            <app-markdown-renderer [content]="msg.text"></app-markdown-renderer>
+          </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div *ngIf="loading" class="message-bot loading-msg">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Input -->
     <div class="chatbot-footer">
-      <input 
-        [(ngModel)]="input" 
-        (keyup.enter)="sendMessage()" 
-        placeholder="Ask something..." 
+      <input
+        [(ngModel)]="input"
+        (keyup.enter)="sendMessage()"
+        placeholder="Ask something..."
       />
-      <button 
-        (click)="sendMessage()" 
+      <button
+        (click)="sendMessage()"
       >
         Send
       </button>

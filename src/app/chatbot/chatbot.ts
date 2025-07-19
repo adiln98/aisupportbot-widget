@@ -1,17 +1,19 @@
 // component chatbot.ts
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ChatbotService } from './chatbotservice';
 import { environment } from '../../environments/environment';
 import { Logger } from '../utils/logger';
+import { MarkdownRendererComponent } from '../markdown-renderer/markdown-renderer.component';
 
 // ===== INTERFACES =====
 interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
   timestamp?: Date;
+  documents?: any[];
 }
 
 interface BotResponse {
@@ -26,26 +28,33 @@ interface BotResponse {
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MarkdownRendererComponent],
   templateUrl: './chatbot.html',
   styleUrls: ['./chatbot.scss']
 })
 export class ChatbotComponent implements OnDestroy {
+  // ===== VIEW CHILD REFERENCES =====
+  @ViewChild('chatbotBody', { static: false }) chatbotBody!: ElementRef;
+
   // ===== PUBLIC PROPERTIES =====
   showChat = false;
   isClosing = false;
   input = '';
   messages: ChatMessage[] = [
-    { sender: 'bot', text: 'Hey DocNow!👋', timestamp: new Date() }
+    { sender: 'bot', text: 'Welcome to DocNow! 👋 How can I help you today?', timestamp: new Date() }
   ];
   loading = false;
+  documents: any[] = [];
 
   // ===== PRIVATE PROPERTIES =====
   private pageContext: string | null = window.location.pathname;
+  private previousPageContext: string | null = null;
   private accessToken: string | null = null;
   private isInitialized = false;
   private closeTimeout?: number;
   private isHovered = false;
+  private hasSearchedDocuments = false;
+  private isSearching = false;
 
   // ===== CONSTRUCTOR & INITIALIZATION =====
   constructor(private chatbotService: ChatbotService) {
@@ -53,10 +62,43 @@ export class ChatbotComponent implements OnDestroy {
     window.addEventListener('message', (event) => {
       if (event.origin === environment.parentOrigin && event.data) {
         if (event.data.type === 'PAGE_CONTEXT' && typeof event.data.page_context === 'string') {
-          this.pageContext = `I am on ${event.data.page_context}`;
-          Logger.log('Received page context:', this.pageContext);
+          const newPageContext = event.data.page_context;
+          let processedPageContext = newPageContext;
+
+          if (processedPageContext) {
+            processedPageContext = processedPageContext?.slice(1, processedPageContext.length);
+          }
+
+          // Check if page context has changed
+          if (this.pageContext !== processedPageContext) {
+            Logger.log('Page context changed', { from: this.pageContext, to: processedPageContext });
+
+            // Store the previous context and update to new context
+            this.previousPageContext = this.pageContext;
+            this.pageContext = processedPageContext;
+
+            // Reset chatbot state for new page context
+            this.resetChatbotState();
+
+            // Re-run document search with new context
+            this.hasSearchedDocuments = false;
+            if (this.pageContext && !this.isSearching) {
+              Logger.log('Starting document search for new page context:', this.pageContext);
+              this.searchDocumentsInBackground();
+            }
+          } else {
+            // Same page context, just update if needed
+            this.pageContext = processedPageContext;
+
+            // Search documents only once when page context is first received
+            if (!this.hasSearchedDocuments && this.pageContext && !this.isSearching) {
+              this.hasSearchedDocuments = true;
+              Logger.log('Starting initial document search for page context:', this.pageContext);
+              this.searchDocumentsInBackground();
+            }
+          }
         }
-        
+
         if (event.data.type === 'ACCESS_TOKEN' && event.data.accessToken) {
           this.accessToken = event.data.accessToken;
           Logger.log('Received access token:', this.accessToken ? 'Token received' : 'No token');
@@ -89,9 +131,14 @@ export class ChatbotComponent implements OnDestroy {
     if (!this.showChat && !this.isClosing) {
       this.showChat = true;
       this.isClosing = false;
-      this.messages = [
-        { sender: 'bot', text: 'Hey DocNow!👋 How can I help you today?', timestamp: new Date() }
-      ];
+
+      // Only initialize messages if this is the first time opening (messages array is empty)
+      if (this.messages.length === 0) {
+        this.messages = [
+          { sender: 'bot', text: 'Hey DocNow! 👋 How can I help you today?', timestamp: new Date() }
+        ];
+      }
+
       this.validateInBackground();
       this.notifyParentState();
     } else if (this.showChat && !this.isClosing) {
@@ -108,25 +155,30 @@ export class ChatbotComponent implements OnDestroy {
       this.validateInBackground();
     }
 
-    this.messages.push({ 
-      sender: 'user', 
-      text: userMsg, 
-      timestamp: new Date() 
+    this.messages.push({
+      sender: 'user',
+      text: userMsg,
+      timestamp: new Date()
     });
     this.input = '';
     this.loading = true;
+
+    // Scroll to bottom after adding user message
+    this.scrollToBottom();
 
     Logger.log('Using access token:', this.accessToken ? 'Token available' : 'No token');
 
     this.chatbotService.queryBot(userMsg, this.getPageContext(), this.accessToken).subscribe({
       next: (response: BotResponse) => {
-        this.messages.push({ 
-          sender: 'bot', 
-          text: response.answer, 
-          timestamp: new Date() 
+        this.messages.push({
+          sender: 'bot',
+          text: response.answer,
+          timestamp: new Date()
         });
         Logger.log('Chatbot Response', response);
         this.loading = false;
+        // Scroll to bottom after adding bot response
+        this.scrollToBottom();
       },
       error: (error: any) => {
         this.handleError(error);
@@ -137,6 +189,66 @@ export class ChatbotComponent implements OnDestroy {
         });
       }
     });
+  }
+
+  summarizeDocument(filename: string): void {
+    const summarizeMsg = `Summarize the content of the document ${filename}`;
+    
+    this.messages.push({
+      sender: 'user',
+      text: summarizeMsg,
+      timestamp: new Date()
+    });
+    this.loading = true;
+
+    // Scroll to bottom after adding user message
+    this.scrollToBottom();
+
+    Logger.log('Requesting document summary:', filename);
+
+    this.chatbotService.queryBot(summarizeMsg, this.getPageContext(), this.accessToken).subscribe({
+      next: (response: BotResponse) => {
+        this.messages.push({
+          sender: 'bot',
+          text: response.answer,
+          timestamp: new Date()
+        });
+        Logger.log('Summary Response', response);
+        this.loading = false;
+        // Scroll to bottom after adding bot response
+        this.scrollToBottom();
+      },
+      error: (error: any) => {
+        this.handleError(error);
+        Logger.error('Error summarizing document:', error);
+      }
+    });
+  }
+
+  private scrollToBottom(): void {
+    try {
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(() => {
+        if (this.chatbotBody) {
+          const element = this.chatbotBody.nativeElement;
+          
+          // Method 1: Direct scroll to bottom
+          element.scrollTop = element.scrollHeight;
+          
+          // Method 2: Find the last message and scroll to it
+          const lastMessage = element.querySelector('.message-user:last-child, .message-bot:last-child, .loading-msg:last-child');
+          if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }
+          
+          Logger.log(`Scrolled to bottom - scrollTop: ${element.scrollTop}, scrollHeight: ${element.scrollHeight}`);
+        } else {
+          Logger.warn('ChatbotBody element not found for scrolling');
+        }
+      }, 100);
+    } catch (error) {
+      Logger.error('Error scrolling to bottom:', error);
+    }
   }
 
   // ===== PRIVATE METHODS =====
@@ -161,7 +273,7 @@ export class ChatbotComponent implements OnDestroy {
     }
 
     this.isClosing = true;
-    
+
     this.closeTimeout = window.setTimeout(() => {
       this.showChat = false;
       this.isClosing = false;
@@ -179,7 +291,7 @@ export class ChatbotComponent implements OnDestroy {
       }
 
       const testResponse = await firstValueFrom(this.chatbotService.validateConnection());
-      
+
       if (testResponse) {
         Logger.log('Backend connection validated successfully');
         this.isInitialized = true;
@@ -189,18 +301,102 @@ export class ChatbotComponent implements OnDestroy {
     }
   }
 
-  private handleError(error: any): void {
+    private async searchDocumentsInBackground(): Promise<void> {
+    if (this.isSearching) {
+      Logger.log('Document search already in progress, skipping...');
+      return;
+    }
+
+    this.isSearching = true;
+    try {
+      Logger.log('Searching documents in background...');
+
+      // Convert page context to keywords array
+      let keywords: string[] = [];
+      if (this.pageContext) {
+        // If page context contains '/', split it into an array of keywords
+        if (this.pageContext.includes('/')) {
+          keywords = this.pageContext.split('/').filter(keyword => keyword.trim() !== '');
+        } else {
+          // If no '/' found, use the entire page context as a single keyword
+          keywords = [this.pageContext];
+        }
+      }
+
+      const documentsResponse = await firstValueFrom(this.chatbotService.searchDocumentsByKeywords(keywords, this.accessToken));
+
+      if (documentsResponse) {
+        Logger.log('Documents search completed successfully:', documentsResponse);
+
+        // Update the documents data
+        this.addDocumentsMessage(documentsResponse);
+      }
+    } catch (error) {
+      Logger.error('Failed to search documents:', error);
+    } finally {
+      this.isSearching = false;
+    }
+  }
+
+    private handleError(error: any): void {
     this.loading = false;
-    this.messages.push({ 
-      sender: 'bot', 
+    this.messages.push({
+      sender: 'bot',
       text: 'Sorry, something went wrong. Please try again.',
       timestamp: new Date()
     });
     Logger.error('Chatbot Error:', error);
+    // Scroll to bottom after adding error message
+    this.scrollToBottom();
+  }
+
+
+  private addDocumentsMessage(documentsData: any): void {
+    // Instead of adding to messages, just update the documents array
+    if (Array.isArray(documentsData) && documentsData.length > 0) {
+      this.documents = documentsData;
+    } else if (typeof documentsData === 'object' && documentsData.documents) {
+      // Handle case where response has a documents property
+      const docs = documentsData.documents;
+      if (Array.isArray(docs) && docs.length > 0) {
+        this.documents = docs;
+      } else {
+        this.documents = [];
+      }
+    } else {
+      this.documents = [];
+    }
+    
+    Logger.log('Documents updated:', this.documents.length);
   }
 
   // ===== UTILITY METHODS =====
   getPageContext(): string | null {
     return this.pageContext;
+  }
+
+  private resetChatbotState(): void {
+    // Reset chat messages to initial state
+    this.messages = [
+      { sender: 'bot', text: 'Welcome to DocNow! 👋 How can I help you today?', timestamp: new Date() }
+    ];
+
+    // Reset loading state and clear documents
+    this.loading = false;
+    this.documents = [];
+
+    // Reset search flag to allow new search
+    this.hasSearchedDocuments = false;
+
+    // Reset initialization flag to re-validate with new context
+    this.isInitialized = false;
+
+    // Clear any pending input
+    this.input = '';
+
+    // Reset searching flag
+    this.isSearching = false;
+
+    Logger.log('Chatbot state reset for new page context');
   }
 }

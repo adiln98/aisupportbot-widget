@@ -3,6 +3,7 @@ export const environment = {
   
   // API URLs
   apiUrl: 'AiSupportPlatformProductionUrl',
+  docsKeywordSearchUrl: 'AiSupportPlatformProductionDocsSearchUrl',
   parentOrigin: 'https://app.doctornow.io',
   
   // Basic settings
