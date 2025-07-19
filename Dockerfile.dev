@@ -13,8 +13,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Expose port 3000 (matches angular.json configuration)
-EXPOSE 3000
+# Expose port 3100 (matches angular.json configuration)
+EXPOSE 3100
 
 # Start Angular development server
 CMD ["npm", "start"] 

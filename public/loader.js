@@ -4,8 +4,8 @@
     
     // ===== CONFIGURATION - CHANGE THESE URLs FOR DIFFERENT ENVIRONMENTS =====
     // Development URLs (ACTIVE)
-    const WIDGET_URL = 'http://localhost:3000/browser/';
-    const WIDGET_ORIGIN = 'http://localhost:3000';
+    const WIDGET_URL = 'http://localhost:3100/browser/';
+    const WIDGET_ORIGIN = 'http://localhost:3100';
     
     // Production URLs (COMMENTED OUT)
     // const WIDGET_URL = 'https://widget.doctornow.io/browser/';
